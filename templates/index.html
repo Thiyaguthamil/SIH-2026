@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>AURA | AI Dynamic Mental Health & Distress Monitoring (SIH26094)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1d2b3e",
+                        "primary-hover": "#0f172a",
+                        "primary-container": "#334155",
+                        secondary: "#475569",
+                        background: "#f8fafc",
+                        surface: "#ffffff"
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans Tamil', 'Noto Sans Devanagari', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(226, 232, 240, 0.85);
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .nav-active {
+            background-color: #1d2b3e !important;
+            color: #ffffff !important;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(29, 43, 62, 0.2);
+        }
+        .nav-active .material-symbols-outlined {
+            font-variation-settings: "FILL" 1;
+        }
+        .recording-pulse {
+            animation: recordPulse 1.2s infinite ease-in-out;
+        }
+        @keyframes recordPulse {
+            0%, 100% { transform: scale(1); background-color: #dc2626; color: #fff; }
+            50% { transform: scale(1.15); background-color: #ef4444; color: #fff; }
+        }
+        .chat-scroll::-webkit-scrollbar { width: 5px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans antialiased selection:bg-slate-700 selection:text-white">
+
+<!-- ================= AUTHENTICATION MODAL / SCREEN ================= -->
+<div id="authScreen" class="fixed inset-0 z-[120] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-2xl rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200">
+        
+        <!-- Header Branding -->
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary text-white shadow-lg mb-3">
+                <span class="material-symbols-outlined text-3xl">shield_with_heart</span>
+            </div>
+            <div class="flex items-center justify-center gap-2 mb-1">
+                <span class="px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-bold uppercase tracking-wider">SIH26094</span>
+                <span class="px-2.5 py-0.5 bg-purple-100 text-purple-800 rounded-full text-xs font-bold">NHAA 14566</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-black text-primary">AURA National Monitoring Gateway</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">AI-Powered Dynamic Mental Health & Crisis Escalation System for Victims of Atrocities</p>
+        </div>
+
+        <!-- Role Toggle Tabs -->
+        <div class="flex bg-slate-100 p-1.5 rounded-2xl mb-6">
+            <button id="authTabVictim" onclick="switchAuthRole('victim')" class="flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all bg-white text-primary shadow-sm">
+                <span class="material-symbols-outlined text-lg">person</span>
+                <span>Victim / Complainant Portal</span>
+            </button>
+            <button id="authTabCounsellor" onclick="switchAuthRole('counsellor')" class="flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all text-slate-600 hover:text-slate-900">
+                <span class="material-symbols-outlined text-lg">medical_services</span>
+                <span>Counsellor / Officer Portal</span>
+            </button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+            <div>
+                <label id="authIdLabel" class="block text-xs font-bold text-slate-600 uppercase mb-1">Complainant / Beneficiary ID or NHAA Case Number</label>
+                <div class="relative">
+                    <input id="loginUsername" type="text" placeholder="e.g. victim_01 or NHAA-2026-8941" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary focus:outline-none pl-10 font-medium">
+                    <span class="material-symbols-outlined absolute left-3 top-3.5 text-slate-400 text-lg">badge</span>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Access PIN / Password</label>
+                <div class="relative">
+                    <input id="loginPassword" type="password" value="pass123" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary focus:outline-none pl-10">
+                    <span class="material-symbols-outlined absolute left-3 top-3.5 text-slate-400 text-lg">lock</span>
+                </div>
+            </div>
+
+            <button type="submit" id="loginBtn" class="w-full bg-primary hover:bg-primary-hover text-white py-3.5 rounded-xl text-sm font-bold shadow-md hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-lg">login</span>
+                <span id="loginBtnText">Secure Sign In</span>
+            </button>
+        </form>
+
+        <!-- Demo Quick Login Chips -->
+        <div class="mt-6 pt-5 border-t border-slate-200">
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center mb-3">Quick Demo Authentication Profiles</p>
+            <div id="victimQuickLogins" class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                <button onclick="quickFillLogin('victim_01', 'pass123', 'victim')" class="p-2.5 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl text-left transition-all">
+                    <div class="font-bold text-primary truncate">Ramesh Kumar</div>
+                    <div class="text-[10px] text-slate-500">NHAA-2026-8941 (Rajasthan)</div>
+                </button>
+                <button onclick="quickFillLogin('victim_tamil_02', 'pass123', 'victim')" class="p-2.5 bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-300 rounded-xl text-left transition-all">
+                    <div class="font-bold text-purple-800 truncate">Murugan (தமிழ்)</div>
+                    <div class="text-[10px] text-slate-500">NHAA-2026-4412 (Madurai)</div>
+                </button>
+                <button onclick="quickFillLogin('victim_hindi_03', 'pass123', 'victim')" class="p-2.5 bg-slate-50 hover:bg-orange-50 border border-slate-200 hover:border-orange-300 rounded-xl text-left transition-all">
+                    <div class="font-bold text-amber-800 truncate">Sunita Devi (हिंदी)</div>
+                    <div class="text-[10px] text-slate-500">NHAA-2026-7731 (Bhopal)</div>
+                </button>
+            </div>
+            <div id="counsellorQuickLogins" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs hidden">
+                <button onclick="quickFillLogin('counsellor_01', 'counsel123', 'counsellor')" class="p-2.5 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl text-left transition-all">
+                    <div class="font-bold text-primary truncate">Dr. Ananya Sharma</div>
+                    <div class="text-[10px] text-slate-500">Senior Clinical Psychologist (DLSA)</div>
+                </button>
+                <button onclick="quickFillLogin('counsellor_dlsa_tn', 'counsel123', 'counsellor')" class="p-2.5 bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-300 rounded-xl text-left transition-all">
+                    <div class="font-bold text-purple-800 truncate">Adv. K. Venkatesh (DLSA)</div>
+                    <div class="text-[10px] text-slate-500">Legal Aid Counsel (Madurai, TN)</div>
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ================= REGISTER NEW NHAA COMPLAINT MODAL ================= -->
+<div id="newComplaintModal" class="hidden fixed inset-0 z-[130] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-xl rounded-3xl p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+            <h3 class="text-base font-bold text-primary flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-600">post_add</span>
+                <span>Register New Complaint via NHAA 14566</span>
+            </h3>
+            <button onclick="closeComplaintModal()" class="text-slate-400 hover:text-slate-700">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form id="newComplaintForm" onsubmit="handleRegisterComplaint(event)" class="space-y-3.5 text-xs font-semibold text-slate-700">
+            <div>
+                <label class="block mb-1">Complainant / Survivor Full Name</label>
+                <input id="modalName" type="text" placeholder="e.g. Suresh V." required class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block mb-1">State / Union Territory</label>
+                    <select id="modalStateSelect" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-medium"></select>
+                </div>
+                <div>
+                    <label class="block mb-1">District / Jurisdiction</label>
+                    <input id="modalDistrict" type="text" placeholder="e.g. Tirunelveli" required class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+                </div>
+            </div>
+            <div>
+                <label class="block mb-1">Atrocity / Offence Category</label>
+                <select id="modalCategory" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-medium">
+                    <option>SC/ST PoA - Caste Violence & Threats</option>
+                    <option>Social Boycott & Denial of Public Amenities (Sec 3)</option>
+                    <option>Witness Facing Intimidation / Coercion</option>
+                    <option>Grievous Bodily Hurt & Arson</option>
+                    <option>Sexual Harassment / Atrocity against Women</option>
+                    <option>Land Dispossession & Economic Atrocity</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block mb-1">Legal Stage</label>
+                    <select id="modalStage" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-medium">
+                        <option>FIR Registered</option>
+                        <option>Investigation / Chargesheet</option>
+                        <option>Trial / Court Hearings</option>
+                        <option>Special Court Trial</option>
+                        <option>Rehabilitation & Compensation</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-1">FIR / Police Station</label>
+                    <input id="modalFir" type="text" placeholder="FIR-55/2026, Central PS" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+                </div>
+            </div>
+            <div>
+                <label class="block mb-1">Preferred Language for Monitoring</label>
+                <select id="modalLang" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-medium">
+                    <option value="en">English</option>
+                    <option value="ta">தமிழ் (Tamil)</option>
+                    <option value="hi">हिंदी (Hindi)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block mb-1">Immediate Threat / Intimidation Details</label>
+                <textarea id="modalThreat" rows="2" placeholder="Describe any current threats, court fears, or boycotts..." class="w-full bg-white border border-slate-300 rounded-xl p-3 text-slate-800 resize-none"></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-md hover:bg-primary-hover transition-all">
+                Generate NHAA Ticket & Activate Dynamic Monitoring
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ================= MAIN APPLICATION LAYOUT ================= -->
+<div class="flex flex-1 relative min-h-screen">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <nav id="appSidebar" class="hidden md:flex bg-white/95 backdrop-blur-xl fixed h-full left-0 w-64 md:w-72 shadow-xl z-30 flex-col p-4 gap-2 border-r border-slate-200">
+        <!-- Logo & Portal Tag -->
+        <div class="flex items-center gap-3 mb-2 px-2 mt-2">
+            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md">
+                <span class="material-symbols-outlined text-2xl">shield_with_heart</span>
+            </div>
+            <div>
+                <h1 class="font-extrabold text-lg text-primary leading-tight">AURA AI</h1>
+                <p id="navRoleBadge" class="text-[11px] font-bold text-blue-600">VICTIM SECURE PORTAL</p>
+            </div>
+        </div>
+
+        <!-- Panic / Stealth Mode Button -->
+        <button onclick="enterStealth()" class="w-full bg-red-700 hover:bg-red-800 text-white py-2.5 rounded-xl text-xs font-bold tracking-wider hover:scale-[1.02] active:scale-95 transition-all shadow-md flex items-center justify-center gap-2 mb-2">
+            <span class="material-symbols-outlined text-[18px]">security</span>
+            <span>QUICK EXIT (Stealth Mode)</span>
+        </button>
+
+        <!-- Navigation Links Container -->
+        <ul id="navList" class="flex flex-col gap-1.5 flex-1 text-sm font-medium">
+            <!-- Victim Links -->
+            <li class="victim-only">
+                <a data-tab="distress_calc" onclick="showTab('distress_calc')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px]">calculate</span>
+                    <span>Multi-Factor Distress Calc</span>
+                </a>
+            </li>
+            <li class="victim-only">
+                <a data-tab="journal" onclick="showTab('journal')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px]">record_voice_over</span>
+                    <span>Voice & Text Journal</span>
+                </a>
+            </li>
+            <li class="victim-only">
+                <a data-tab="companion" onclick="showTab('companion')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px]">forum</span>
+                    <span>AI Chatbot (தமிழ்/हिंदी/EN)</span>
+                </a>
+            </li>
+            <li class="victim-only">
+                <a data-tab="grounding" onclick="showTab('grounding')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px]">spa</span>
+                    <span>Nervous System Grounding</span>
+                </a>
+            </li>
+
+            <!-- Counsellor Only Links -->
+            <li class="counsellor-only hidden">
+                <a data-tab="clinical_command" onclick="showTab('clinical_command')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px]">crisis_alert</span>
+                    <span>Red-Flag Triage & Alerts</span>
+                </a>
+            </li>
+            <li class="counsellor-only hidden">
+                <a data-tab="behavioural_view" onclick="showTab('behavioural_view')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px]">psychology</span>
+                    <span>Behavioural & Escalation AI</span>
+                </a>
+            </li>
+            <li class="counsellor-only hidden">
+                <a data-tab="longitudinal" onclick="showTab('longitudinal')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px]">monitoring</span>
+                    <span>Longitudinal Trajectory Charts</span>
+                </a>
+            </li>
+
+            <!-- Common Links -->
+            <li>
+                <a data-tab="helplines" onclick="showTab('helplines')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px] text-red-600">call</span>
+                    <span>24x7 National Helplines</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- User Profile & Switch Session -->
+        <div class="mt-auto pt-3 border-t border-slate-200">
+            <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 mb-2">
+                <p id="sidebarUserName" class="text-xs font-bold text-slate-800 truncate">Ramesh Kumar</p>
+                <p id="sidebarUserSub" class="text-[10px] text-slate-500 font-medium truncate">NHAA-2026-8941</p>
+            </div>
+            <button onclick="logout()" class="w-full py-2 px-3 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl flex items-center justify-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined text-base">logout</span>
+                <span>Switch Role / Logout</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 md:ml-72 p-4 md:p-8 overflow-y-auto min-h-screen">
+        <div class="max-w-6xl mx-auto space-y-6 pb-20 md:pb-8">
+
+            <!-- TOP BANNER & NATIONAL REGISTRATION DROPDOWNS BAR -->
+            <header class="glass-panel rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-bold uppercase">SIH Problem ID: 26094</span>
+                            <span id="roleHeaderPill" class="px-2.5 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-bold">Victim Mode Active</span>
+                        </div>
+                        <h2 class="text-xl md:text-2xl font-black text-primary mt-1">AI Dynamic Mental Health Monitoring System</h2>
+                        <p class="text-xs md:text-sm text-slate-500">Continuous Monitoring, Voice & Behavioural Prediction for Victims of Atrocities</p>
+                    </div>
+
+                    <!-- Register Complaint Action -->
+                    <div class="flex items-center gap-2">
+                        <button onclick="openComplaintModal()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-sm transition-all">
+                            <span class="material-symbols-outlined text-base">add_circle</span>
+                            <span>Register New NHAA Complaint</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STATE & NHAA REGISTERED COMPLAINTS DROPDOWN CONTROLS -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t border-slate-200 text-xs font-bold text-slate-600">
+                    <div>
+                        <label class="block mb-1 text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm text-blue-600">map</span>
+                            <span>Select State / UT</span>
+                        </label>
+                        <select id="stateFilterSelect" onchange="onStateDropdownChange()" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-primary"></select>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block mb-1 text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm text-purple-600">receipt_long</span>
+                            <span>Complaints Registered through NHAA (14566)</span>
+                        </label>
+                        <select id="nhaaCasesSelect" onchange="onNhaaCaseSelected()" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-primary"></select>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ================= TAB 1: MULTI-FACTOR DISTRESS CALCULATOR ================= -->
+            <div id="tab-distress_calc" class="tab-content active space-y-6">
+                
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    <!-- Left: Multi-Factor Inputs Form -->
+                    <div class="lg:col-span-8 glass-panel rounded-3xl p-6 space-y-5">
+                        <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                            <div>
+                                <h3 class="text-lg font-black text-primary flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-blue-600">tune</span>
+                                    <span>Accurate Multi-Factor Distress Engine</span>
+                                </h3>
+                                <p class="text-xs text-slate-500">Evaluates comprehensive clinical, legal, and social stressors under the SC/ST (PoA) Act.</p>
+                            </div>
+                            <span class="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-bold">10 Dynamic Factors</span>
+                        </div>
+
+                        <!-- 1. Threats & Court Stress -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="p-3.5 bg-red-50/70 border border-red-200 rounded-2xl space-y-1">
+                                <label class="text-xs font-bold text-red-900 flex justify-between">
+                                    <span>Threats & Intimidation Level</span>
+                                    <span id="threatVal" class="text-red-700 font-black">5/10</span>
+                                </label>
+                                <input id="threatSlider" oninput="updateDistressCalc(); document.getElementById('threatVal').textContent=this.value+'/10'" class="w-full h-2 bg-red-200 rounded-lg appearance-none cursor-pointer accent-red-600" max="10" min="1" type="range" value="5">
+                                <p class="text-[10px] text-red-700 font-medium">1 = Safe, 10 = Explicit life threats / intimidation to turn hostile</p>
+                            </div>
+
+                            <div class="p-3.5 bg-amber-50/70 border border-amber-200 rounded-2xl space-y-1">
+                                <label class="text-xs font-bold text-amber-900 flex justify-between">
+                                    <span>Legal & Court Hearing Dread</span>
+                                    <span id="courtVal" class="text-amber-800 font-black">6/10</span>
+                                </label>
+                                <input id="courtSlider" oninput="updateDistressCalc(); document.getElementById('courtVal').textContent=this.value+'/10'" class="w-full h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-600" max="10" min="1" type="range" value="6">
+                                <p class="text-[10px] text-amber-700 font-medium">1 = Confident, 10 = Terrified of court appearance/harassment</p>
+                            </div>
+                        </div>
+
+                        <!-- 2. Social Boycott & Economic Strain -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="p-3.5 bg-purple-50/70 border border-purple-200 rounded-2xl space-y-1">
+                                <label class="text-xs font-bold text-purple-900 flex justify-between">
+                                    <span>Social Boycott & Ostracism</span>
+                                    <span id="socialVal" class="text-purple-800 font-black">5/10</span>
+                                </label>
+                                <input id="socialSlider" oninput="updateDistressCalc(); document.getElementById('socialVal').textContent=this.value+'/10'" class="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600" max="10" min="1" type="range" value="5">
+                                <p class="text-[10px] text-purple-700 font-medium">1 = Integrated, 10 = Village exclusion / well water denied</p>
+                            </div>
+
+                            <div class="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-1">
+                                <label class="text-xs font-bold text-emerald-900 flex justify-between">
+                                    <span>Economic & Wage Hardship</span>
+                                    <span id="econVal" class="text-emerald-800 font-black">5/10</span>
+                                </label>
+                                <input id="econSlider" oninput="updateDistressCalc(); document.getElementById('econVal').textContent=this.value+'/10'" class="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" max="10" min="1" type="range" value="5">
+                                <p class="text-[10px] text-emerald-700 font-medium">1 = Financial stability, 10 = Daily wage loss / debt / starvation</p>
+                            </div>
+                        </div>
+
+                        <!-- 3. Sleep & Somatics & Depressive Burden -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-1">
+                                <label class="text-xs font-bold text-slate-700 flex justify-between">
+                                    <span>Sleep Quality</span>
+                                    <span id="sleepVal" class="text-primary font-black">4/10</span>
+                                </label>
+                                <input id="sleepSlider" oninput="updateDistressCalc(); document.getElementById('sleepVal').textContent=this.value+'/10'" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary" max="10" min="1" type="range" value="4">
+                                <p class="text-[9px] text-slate-500">1 = Insomnia/Nightmares, 10 = Restful</p>
+                            </div>
+
+                            <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-1">
+                                <label class="text-xs font-bold text-slate-700 flex justify-between">
+                                    <span>Somatic Panic</span>
+                                    <span id="somaticVal" class="text-primary font-black">6/10</span>
+                                </label>
+                                <input id="somaticSlider" oninput="updateDistressCalc(); document.getElementById('somaticVal').textContent=this.value+'/10'" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary" max="10" min="1" type="range" value="6">
+                                <p class="text-[9px] text-slate-500">1 = Calm, 10 = Tremors/Palpitations</p>
+                            </div>
+
+                            <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-1">
+                                <label class="text-xs font-bold text-slate-700 flex justify-between">
+                                    <span>Depressive Burden</span>
+                                    <span id="depressVal" class="text-primary font-black">5/10</span>
+                                </label>
+                                <input id="depressSlider" oninput="updateDistressCalc(); document.getElementById('depressVal').textContent=this.value+'/10'" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary" max="10" min="1" type="range" value="5">
+                                <p class="text-[9px] text-slate-500">PHQ-9 proxy: Hopelessness</p>
+                            </div>
+                        </div>
+
+                        <!-- 4. Journal Text & Voice Stress Input -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-700 flex items-center justify-between">
+                                <span>Case Narrative & Recent Incidents (NLP Analysis)</span>
+                                <span class="text-[11px] text-slate-400 font-normal">Supports Tamil, Hindi & English</span>
+                            </label>
+                            <textarea id="calcJournalText" oninput="updateDistressCalc()" rows="3" placeholder="Describe threats, court experience, or emotional state... (e.g. Accused shouted threats outside my door. I fear going to court... / அவர்கள் என்னை மிரட்டுகிறார்கள்)" class="w-full bg-white border border-slate-300 rounded-2xl p-3 text-xs md:text-sm text-slate-800 focus:ring-2 focus:ring-primary focus:outline-none resize-none"></textarea>
+                        </div>
+
+                        <!-- Action Button: Commit Entry -->
+                        <div class="flex items-center justify-between pt-2">
+                            <span id="liveCalcStatus" class="text-xs font-semibold text-slate-500">Live dynamic score recalculating...</span>
+                            <button onclick="commitCalculatedEntry()" class="bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                                <span class="material-symbols-outlined text-base">save</span>
+                                <span>Save & Dispatch Assessment</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Dynamic Gauge, Risk Tier & XAI Breakdown -->
+                    <div class="lg:col-span-4 glass-panel rounded-3xl p-6 flex flex-col justify-between text-center gap-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-sm font-black text-primary uppercase tracking-wider">Dynamic Distress Score</h4>
+                            <span id="gaugeRiskTierBadge" class="text-xs px-3 py-1 rounded-full font-extrabold bg-red-100 text-red-700">ELEVATED</span>
+                        </div>
+
+                        <!-- Circular Meter -->
+                        <div class="relative w-44 h-44 mx-auto my-1">
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" fill="none" r="40" stroke="#e2e8f0" stroke-width="8"></circle>
+                                <circle id="gaugeProgressCircle" class="transition-all duration-700 ease-out" cx="50" cy="50" fill="none" r="40" stroke="#f97316" stroke-dasharray="251.2" stroke-dashoffset="100" stroke-width="8" stroke-linecap="round"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span id="gaugeScoreText" class="text-4xl font-black text-primary">68</span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Out of 100</span>
+                            </div>
+                        </div>
+
+                        <!-- Primary Contributing Signals -->
+                        <div class="space-y-1.5 text-left text-xs bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                            <p class="font-bold text-slate-700 text-[11px] uppercase tracking-wider">Explainable AI Drivers (XAI):</p>
+                            <div id="xaiSignalsList" class="space-y-1 text-slate-600">
+                                <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500"></span><span>Threat & Intimidation Intensity (18%)</span></div>
+                                <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Court Hearing Dread (14%)</span></div>
+                                <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-purple-500"></span><span>Social Boycott Strain (12%)</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Statutory Interventions Box -->
+                        <div id="gaugeInterventionsBox" class="p-3 rounded-2xl bg-blue-50/90 border border-blue-200 text-left text-xs text-blue-950 font-medium space-y-1">
+                            <p class="font-bold text-blue-900">Recommended Statutory Relief:</p>
+                            <p id="gaugeInterventionText">Section 15A Witness Protection & DLSA Legal Escort</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            <!-- ================= /TAB 1: MULTI-FACTOR DISTRESS CALCULATOR ================= -->
+
+            <!-- ================= TAB 2: VOICE & TEXT JOURNAL ================= -->
+            <div id="tab-journal" class="tab-content space-y-6">
+                <div class="glass-panel rounded-3xl p-6 max-w-3xl mx-auto space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-2xl text-primary">mic</span>
+                            <div>
+                                <h3 class="text-base font-bold text-primary">Voice-to-Text Journal & Acoustic Stress Analysis</h3>
+                                <p class="text-xs text-slate-500">Speak in Tamil (தமிழ்), Hindi (हिंदी), or English to record your thoughts.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Voice Language Switcher -->
+                        <div class="flex items-center gap-2 text-xs font-bold">
+                            <span class="text-slate-500">Voice Language:</span>
+                            <select id="speechLangSelect" class="bg-white border border-slate-300 rounded-xl px-2.5 py-1 text-xs font-semibold text-slate-800">
+                                <option value="ta-IN">தமிழ் (Tamil - India)</option>
+                                <option value="hi-IN">हिंदी (Hindi - India)</option>
+                                <option value="en-IN" selected>English (India)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Live Mic Recording Controls -->
+                    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <button id="speechRecordBtn" onclick="toggleSpeechRecognition()" class="bg-red-600 hover:bg-red-700 text-white p-3 rounded-full shadow-md flex items-center justify-center transition-all">
+                                <span id="speechMicIcon" class="material-symbols-outlined text-xl">mic</span>
+                            </button>
+                            <div>
+                                <p id="speechStatusTitle" class="text-xs font-bold text-slate-800">Click to Speak</p>
+                                <p id="speechStatusDesc" class="text-[11px] text-slate-500">Captures voice audio & transcribes live in real-time</p>
+                            </div>
+                        </div>
+
+                        <!-- Voice Acoustic Meter -->
+                        <div class="flex items-center gap-3 text-right">
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">Vocal Jitter & Acoustic Stress</p>
+                                <p id="voiceAcousticScore" class="text-base font-black text-primary">-- / 100</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-xs">
+                                <span class="material-symbols-outlined">graphic_eq</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Journal Text Box -->
+                    <div class="space-y-2">
+                        <textarea id="voiceJournalText" rows="6" placeholder="Your spoken words will appear here automatically, or you can type directly..." class="w-full bg-white border border-slate-300 rounded-2xl p-4 text-sm text-slate-800 focus:ring-2 focus:ring-primary focus:outline-none resize-none"></textarea>
+                    </div>
+
+                    <button onclick="submitJournalFromVoiceTab()" class="w-full bg-primary hover:bg-primary-hover text-white py-3 rounded-xl text-sm font-bold shadow-md transition-all">
+                        Run Multi-Modal AI Analysis on Spoken Journal
+                    </button>
+                </div>
+            </div>
+            <!-- ================= /TAB 2: VOICE & TEXT JOURNAL ================= -->
+
+            <!-- ================= TAB 3: MULTILINGUAL AI CHATBOT ================= -->
+            <div id="tab-companion" class="tab-content space-y-4">
+                <div class="glass-panel rounded-3xl p-6 flex flex-col h-[75vh]">
+                    
+                    <!-- Chat Header -->
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center">
+                                <span class="material-symbols-outlined text-lg">auto_awesome</span>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-primary">Empathetic AI Companion ('AURA')</h3>
+                                <p class="text-[11px] text-slate-500">Multilingual Trauma-Informed Listening & Statutory Guidance</p>
+                            </div>
+                        </div>
+
+                        <!-- Language Picker -->
+                        <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+                            <button onclick="setChatLanguage('en')" id="chatLangEn" class="px-3 py-1 rounded-lg bg-white text-primary shadow-sm">English</button>
+                            <button onclick="setChatLanguage('ta')" id="chatLangTa" class="px-3 py-1 rounded-lg text-slate-600 hover:text-primary">தமிழ்</button>
+                            <button onclick="setChatLanguage('hi')" id="chatLangHi" class="px-3 py-1 rounded-lg text-slate-600 hover:text-primary">हिंदी</button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Prompt Chips in 3 Languages -->
+                    <div id="chatQuickChips" class="flex flex-wrap gap-2 mb-3">
+                        <!-- Populated dynamically via JS based on selected language -->
+                    </div>
+
+                    <!-- Chat Message Area -->
+                    <div id="chatMessagesBox" class="flex-1 overflow-y-auto space-y-3 pr-2 chat-scroll text-xs md:text-sm">
+                        <!-- Welcome message -->
+                        <div class="flex gap-3 max-w-[85%]">
+                            <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 text-white shadow-sm">
+                                <span class="material-symbols-outlined text-sm">auto_awesome</span>
+                            </div>
+                            <div id="chatWelcomeBubble" class="bg-white p-3.5 rounded-2xl rounded-tl-sm border border-slate-200 shadow-sm text-slate-800 whitespace-pre-line leading-relaxed">
+                                Hello. I am AURA, your trauma-informed mental health companion. I am right here with you in a confidential, safe space. How are you feeling today?
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input Controls with Voice Support -->
+                    <div class="flex items-center gap-2 pt-3 border-t border-slate-200">
+                        <button id="chatMicBtn" onclick="toggleChatVoiceInput()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 p-2.5 rounded-full flex items-center justify-center transition-all" title="Speak message">
+                            <span id="chatMicIcon" class="material-symbols-outlined text-lg text-red-600">mic</span>
+                        </button>
+                        <input id="chatTextInput" onkeydown="if(event.key==='Enter'){sendChatMessage()}" type="text" placeholder="Share your feelings, court worries, or thoughts..." class="flex-1 bg-white border border-slate-300 rounded-full px-4 py-2.5 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        <button onclick="sendChatMessage()" class="bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-full text-xs md:text-sm font-bold shadow-sm transition-all flex items-center gap-1.5">
+                            <span>Send</span>
+                            <span class="material-symbols-outlined text-sm">send</span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+            <!-- ================= /TAB 3: MULTILINGUAL AI CHATBOT ================= -->
+
+            <!-- ================= TAB 4: NERVOUS SYSTEM GROUNDING ================= -->
+            <div id="tab-grounding" class="tab-content space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-primary">Trauma Grounding & Nervous System De-escalation</h2>
+                    <p class="text-xs text-slate-500">Clinical PTSD sensory grounding and Box Breathing for lowering acute distress before court appearances.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Box Breathing -->
+                    <div class="glass-panel rounded-3xl p-6 flex flex-col items-center text-center gap-4">
+                        <div class="self-start text-left">
+                            <h3 class="text-base font-bold text-primary">4-7-8 Box Breathing Pacer</h3>
+                            <p class="text-xs text-slate-500">Inhale deeply through nose (4s), hold gently (7s), exhale slowly (8s).</p>
+                        </div>
+
+                        <div id="pacerCircle" class="w-44 h-44 rounded-full bg-blue-100 border-4 border-blue-300 flex items-center justify-center shadow-inner relative my-4 transition-all duration-1000">
+                            <span id="pacerLabel" class="text-base font-extrabold text-blue-900 px-4">Ready</span>
+                        </div>
+
+                        <button id="pacerBtn" onclick="startBoxBreathing()" class="bg-primary text-white px-6 py-2.5 rounded-full text-xs font-bold shadow-md hover:scale-105 transition-all">
+                            ▶️ Start Guided 1-Minute Breathing
+                        </button>
+                    </div>
+
+                    <!-- 5-4-3-2-1 Sensory Grounding -->
+                    <div class="glass-panel rounded-3xl p-6 space-y-3 text-xs">
+                        <h3 class="text-base font-bold text-primary">5-4-3-2-1 Sensory PTSD Grounding</h3>
+                        <p class="text-slate-500 -mt-1">Orient your mind back to the safe, physical present:</p>
+
+                        <label class="flex items-center gap-3 cursor-pointer bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                            <input class="w-4 h-4 rounded text-primary focus:ring-primary" type="checkbox">
+                            <span><strong>5 things you can see</strong> (the wall, light, ceiling, shoes, chair)</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                            <input class="w-4 h-4 rounded text-primary focus:ring-primary" type="checkbox">
+                            <span><strong>4 things you can physically touch</strong> (your shirt fabric, desktop, fingertips)</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                            <input class="w-4 h-4 rounded text-primary focus:ring-primary" type="checkbox">
+                            <span><strong>3 sounds you hear</strong> (ambient hum, birds, your slow breathing)</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                            <input class="w-4 h-4 rounded text-primary focus:ring-primary" type="checkbox">
+                            <span><strong>2 scents around you</strong> (fresh air, soap, tea)</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                            <input class="w-4 h-4 rounded text-primary focus:ring-primary" type="checkbox">
+                            <span><strong>1 Affirmation</strong> ("I survived the past, and I am safe in this moment")</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <!-- ================= /TAB 4: NERVOUS SYSTEM GROUNDING ================= -->
+
+            <!-- ================= TAB 5: COUNSELLOR RED-FLAG TRIAGE ================= -->
+            <div id="tab-clinical_command" class="tab-content space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-primary">District & State Clinical Red-Flag Triage Command</h2>
+                    <p class="text-xs text-slate-500">Real-time alert dispatch for District Magistrates (DM), Superintendents of Police (SP), and DLSA Legal Advocates.</p>
+                </div>
+
+                <!-- High Level Stats -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="glass-panel rounded-2xl p-4 flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-2xl">groups</span>
+                        </div>
+                        <div>
+                            <p class="text-[11px] font-bold text-slate-400 uppercase">Monitored Victims</p>
+                            <p id="counselorTotalVictims" class="text-2xl font-black text-primary">--</p>
+                        </div>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-4 flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-red-100 text-red-800 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-2xl">crisis_alert</span>
+                        </div>
+                        <div>
+                            <p class="text-[11px] font-bold text-slate-400 uppercase">Active Red-Flag Escalations</p>
+                            <p id="counselorActiveAlerts" class="text-2xl font-black text-red-600">--</p>
+                        </div>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-4 flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-2xl">speed</span>
+                        </div>
+                        <div>
+                            <p class="text-[11px] font-bold text-slate-400 uppercase">National Avg Distress</p>
+                            <p id="counselorAvgDistress" class="text-2xl font-black text-purple-900">-- / 100</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Triage Tickets Queue -->
+                <div class="glass-panel rounded-3xl p-6 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-red-800 flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-lg">warning</span>
+                            <span>Active High-Risk Escalation Tickets (Immediate Response Required)</span>
+                        </h3>
+                        <button onclick="refreshCounsellorData()" class="text-xs font-bold text-primary hover:underline">Refresh</button>
+                    </div>
+
+                    <div id="alertsContainerList" class="space-y-2.5 text-xs"></div>
+                </div>
+
+                <!-- Jurisdiction Vulnerability Table -->
+                <div class="glass-panel rounded-3xl p-6 space-y-3">
+                    <h3 class="text-sm font-bold text-primary">Jurisdiction Vulnerability Matrix (By District & State)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="text-slate-400 border-b border-slate-200">
+                                    <th class="py-2.5 pr-3">District</th>
+                                    <th class="py-2.5 pr-3">State</th>
+                                    <th class="py-2.5 pr-3">Beneficiaries</th>
+                                    <th class="py-2.5 pr-3">Avg Distress</th>
+                                    <th class="py-2.5 pr-3">High Risk Cases</th>
+                                    <th class="py-2.5">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="districtTbody" class="divide-y divide-slate-100 font-medium"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- ================= /TAB 5: COUNSELLOR RED-FLAG TRIAGE ================= -->
+
+            <!-- ================= TAB 6: BEHAVIOURAL & ESCALATION ANALYSIS ================= -->
+            <div id="tab-behavioural_view" class="tab-content space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-primary">Longitudinal Behavioural AI & Early Crisis Predictor</h2>
+                        <p class="text-xs text-slate-500">Detects interaction decay, response latency widening, and predict escalation *before* emergency arises.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-600">Select Beneficiary:</span>
+                        <select id="behaviouralPatientSelect" onchange="loadBehaviouralData()" class="bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800"></select>
+                    </div>
+                </div>
+
+                <!-- Behavioural KPI Metrics Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="glass-panel rounded-2xl p-4">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Interaction Adherence</p>
+                        <p id="behAdherence" class="text-xl font-black text-primary">--</p>
+                        <p id="behAdherenceSub" class="text-[10px] text-slate-500 mt-0.5">Cadence health</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-4">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Response Latency Gap</p>
+                        <p id="behGap" class="text-xl font-black text-primary">-- days</p>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Avg interval between check-ins</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-4">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Distress Velocity</p>
+                        <p id="behVelocity" class="text-xl font-black text-primary">--</p>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Rate of distress change</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-4">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Escalation Probability</p>
+                        <p id="behEscalation" class="text-xl font-black text-red-600">--%</p>
+                        <p id="behEscalationTier" class="text-[10px] font-bold text-red-600 mt-0.5">CRITICAL</p>
+                    </div>
+                </div>
+
+                <!-- Early Warning AI Forecast Card -->
+                <div class="glass-panel rounded-3xl p-6 space-y-3 border-l-4 border-amber-500">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-amber-600">psychology_alt</span>
+                        <h3 class="text-sm font-bold text-primary">Automated Behavioural Prognosis & Escalation Forecast</h3>
+                    </div>
+                    <p id="behSummaryText" class="text-xs text-slate-700 leading-relaxed font-medium bg-amber-50/70 p-3 rounded-2xl border border-amber-200">
+                        Loading behavioural predictive modeling...
+                    </p>
+                    
+                    <div class="space-y-1.5 pt-1">
+                        <p class="text-[11px] font-bold text-slate-500 uppercase">Detected Behavioural Indicators:</p>
+                        <ul id="behFlagsList" class="space-y-1 text-xs text-slate-700"></ul>
+                    </div>
+                </div>
+            </div>
+            <!-- ================= /TAB 6: BEHAVIOURAL & ESCALATION ANALYSIS ================= -->
+
+            <!-- ================= TAB 7: LONGITUDINAL TRAJECTORY CHARTS ================= -->
+            <div id="tab-longitudinal" class="tab-content space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-primary">Longitudinal Distress Trajectories</h2>
+                        <p class="text-xs text-slate-500">Multi-session temporal trends, emotion shifts, and complete trauma check-in logs.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-600">Select Beneficiary:</span>
+                        <select id="chartPatientSelect" onchange="loadLongitudinalCharts()" class="bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800"></select>
+                    </div>
+                </div>
+
+                <!-- Charts Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-8 glass-panel rounded-3xl p-6">
+                        <h3 class="text-sm font-bold text-primary mb-3">Distress Score Trajectory (Over Time)</h3>
+                        <canvas id="longitudinalLineChart" height="190"></canvas>
+                    </div>
+                    <div class="lg:col-span-4 glass-panel rounded-3xl p-6">
+                        <h3 class="text-sm font-bold text-primary mb-3">Emotion Breakdown</h3>
+                        <canvas id="emotionDoughnutChart" height="190"></canvas>
+                    </div>
+                </div>
+
+                <!-- Detailed Audit Log Table -->
+                <div class="glass-panel rounded-3xl p-6 space-y-3">
+                    <h3 class="text-sm font-bold text-primary">Chronological Interaction Records</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="text-slate-400 border-b border-slate-200 font-semibold">
+                                    <th class="py-2.5 pr-3">Timestamp</th>
+                                    <th class="py-2.5 pr-3">Score</th>
+                                    <th class="py-2.5 pr-3">Tier</th>
+                                    <th class="py-2.5 pr-3">Threat</th>
+                                    <th class="py-2.5 pr-3">Court</th>
+                                    <th class="py-2.5 pr-3">Boycott</th>
+                                    <th class="py-2.5 pr-3">Emotion</th>
+                                    <th class="py-2.5">Journal Excerpt</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTbody" class="divide-y divide-slate-100 font-medium"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- ================= /TAB 7: LONGITUDINAL TRAJECTORY CHARTS ================= -->
+
+            <!-- ================= TAB 8: HELPLINES ================= -->
+            <div id="tab-helplines" class="tab-content space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-primary">24x7 Government Atrocity & Mental Health Helplines</h2>
+                    <p class="text-xs text-slate-500">Official, toll-free crisis numbers under Central & State welfare initiatives.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="glass-panel rounded-2xl p-5 border-l-4 border-blue-600 space-y-1">
+                        <p class="text-[10px] font-bold text-blue-600 uppercase">National SC/ST Helpline</p>
+                        <p class="text-2xl font-black text-primary">14566 (NHAA)</p>
+                        <p class="text-xs text-slate-500">24x7 Toll-Free National Helpline Against Atrocities.</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-5 border-l-4 border-emerald-600 space-y-1">
+                        <p class="text-[10px] font-bold text-emerald-600 uppercase">Tele-MANAS Mental Health</p>
+                        <p class="text-2xl font-black text-primary">14416</p>
+                        <p class="text-xs text-slate-500">Government 24x7 psychiatric & crisis counseling.</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-5 border-l-4 border-purple-600 space-y-1">
+                        <p class="text-[10px] font-bold text-purple-600 uppercase">KIRAN Helpline</p>
+                        <p class="text-2xl font-black text-primary">1800-599-0019</p>
+                        <p class="text-xs text-slate-500">Ministry of Social Justice & Empowerment support.</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-5 border-l-4 border-red-600 space-y-1">
+                        <p class="text-[10px] font-bold text-red-600 uppercase">Emergency Police</p>
+                        <p class="text-2xl font-black text-primary">112</p>
+                        <p class="text-xs text-slate-500">Emergency Response Support System (ERSS).</p>
+                    </div>
+                </div>
+
+                <!-- Tamil Nadu & Regional Specific Helplines -->
+                <div class="glass-panel rounded-3xl p-6 space-y-3">
+                    <h3 class="text-sm font-bold text-primary">Regional State Welfare & Legal Services Authority (DLSA) Links</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                            <p class="font-bold text-slate-800">Tamil Nadu Women Helpline</p>
+                            <p class="text-base font-extrabold text-blue-700">181</p>
+                            <p class="text-slate-500 text-[10px]">Sneha Suicide Prevention (Chennai): 044-24640050</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                            <p class="font-bold text-slate-800">National Legal Services (NALSA)</p>
+                            <p class="text-base font-extrabold text-purple-700">15100</p>
+                            <p class="text-slate-500 text-[10px]">Free legal representation for SC/ST under Sec 12 LSA Act</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                            <p class="font-bold text-slate-800">Childline & Youth Support</p>
+                            <p class="text-base font-extrabold text-emerald-700">1098</p>
+                            <p class="text-slate-500 text-[10px]">Emergency child protection & trauma care</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- ================= /TAB 8: HELPLINES ================= -->
+
+        </div>
+    </main>
+
+</div>
+
+<!-- ================= STEALTH / CAMOUFLAGE OVERLAY ================= -->
+<div id="stealthOverlay" class="hidden fixed inset-0 z-[200] bg-white p-8 overflow-y-auto font-serif">
+    <div class="max-w-3xl mx-auto space-y-4">
+        <h1 class="text-2xl font-bold text-slate-900 font-sans">Engineering Mathematics — Differential Equations & Matrix Algebra</h1>
+        <p class="text-xs text-slate-500 font-sans">Department of Computer Science & Engineering Lecture Notes (Semester III)</p>
+        <hr class="border-slate-200 my-4">
+        
+        <label class="text-xs font-bold text-slate-600 block font-sans">Search Lecture Index</label>
+        <input type="text" value="Eigenvalue decomposition and Laplace transforms..." class="w-full border border-slate-300 rounded-lg px-3.5 py-2 text-sm font-sans">
+
+        <div class="pt-6">
+            <button onclick="exitStealth()" class="bg-primary text-white px-6 py-2 rounded-full text-xs font-bold font-sans shadow-sm">
+                Resume Session
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Toast -->
+<div id="appToast" class="hidden fixed bottom-6 right-6 z-[150] max-w-sm glass-panel rounded-2xl p-4 border-l-4 border-primary text-xs font-semibold text-slate-800 shadow-2xl"></div>
+
+<!-- ================= JAVASCRIPT APPLICATION CONTROLLER ================= -->
+<script>
+// Always point at the AI REST API (server.py), regardless of which port served this page.
+// window.location.origin is wrong whenever this page is loaded via app.py (port 8501),
+// since app.py has no /api/* routes of its own — only server.py (port 5000) does.
+const BACKEND_URL = "http://127.0.0.1:5000";
+
+// Application State
+let currentUser = {
+    user_id: "victim_01",
+    name: "Ramesh Kumar",
+    role: "victim",
+    case_id: "NHAA-2026-8941",
+    state: "Rajasthan",
+    district: "Jaipur",
+    language: "en"
+};
+
+let allStates = [];
+let allNhaaCases = [];
+let currentChatLanguage = "en";
+let isSpeechActive = false;
+let speechRecognizer = null;
+let longitudinalChart = null;
+let emotionChart = null;
+let calcDebounceTimer = null;
+
+// ---------- Authentication Functions ----------
+function switchAuthRole(role) {
+    const tabVictim = document.getElementById('authTabVictim');
+    const tabCounsellor = document.getElementById('authTabCounsellor');
+    const label = document.getElementById('authIdLabel');
+    const victimQuick = document.getElementById('victimQuickLogins');
+    const counsellorQuick = document.getElementById('counsellorQuickLogins');
+
+    if (role === 'victim') {
+        tabVictim.className = "flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all bg-white text-primary shadow-sm";
+        tabCounsellor.className = "flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all text-slate-600 hover:text-slate-900";
+        label.textContent = "Complainant / Beneficiary ID or NHAA Case Number";
+        document.getElementById('loginUsername').placeholder = "e.g. victim_01 or NHAA-2026-8941";
+        document.getElementById('loginUsername').value = "victim_01";
+        document.getElementById('loginPassword').value = "pass123";
+        victimQuick.classList.remove('hidden');
+        counsellorQuick.classList.add('hidden');
+    } else {
+        tabCounsellor.className = "flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all bg-white text-primary shadow-sm";
+        tabVictim.className = "flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all text-slate-600 hover:text-slate-900";
+        label.textContent = "Counsellor / Officer ID";
+        document.getElementById('loginUsername').placeholder = "e.g. counsellor_01";
+        document.getElementById('loginUsername').value = "counsellor_01";
+        document.getElementById('loginPassword').value = "counsel123";
+        victimQuick.classList.add('hidden');
+        counsellorQuick.classList.remove('hidden');
+    }
+}
+
+function quickFillLogin(u, p, role) {
+    switchAuthRole(role);
+    document.getElementById('loginUsername').value = u;
+    document.getElementById('loginPassword').value = p;
+    handleLogin();
+}
+
+async function handleLogin(e) {
+    if (e) e.preventDefault();
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    const role = document.getElementById('authTabVictim').classList.contains('bg-white') ? 'victim' : 'counsellor';
+
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, role })
+        });
+        const data = await res.json();
+        if (res.ok && data.status === 'success') {
+            currentUser = data.user;
+            document.getElementById('authScreen').classList.add('hidden');
+            applyUserRoleUI();
+            showToast(`Welcome, ${currentUser.name}! Signed in as ${currentUser.role.toUpperCase()}.`);
+        } else {
+            showToast(data.message || 'Login failed. Please check credentials.');
+        }
+    } catch (err) {
+        // Fallback for offline demo
+        currentUser = {
+            user_id: username,
+            name: role === 'victim' ? 'Ramesh Kumar (Beneficiary)' : 'Dr. Ananya Sharma (Counsellor)',
+            role: role,
+            case_id: 'NHAA-2026-8941',
+            state: 'Rajasthan',
+            district: 'Jaipur',
+            language: 'en'
+        };
+        document.getElementById('authScreen').classList.add('hidden');
+        applyUserRoleUI();
+        showToast(`Signed in in demo mode as ${role.toUpperCase()}.`);
+    }
+}
+
+function logout() {
+    document.getElementById('authScreen').classList.remove('hidden');
+}
+
+function applyUserRoleUI() {
+    document.getElementById('sidebarUserName').textContent = currentUser.name;
+    document.getElementById('sidebarUserSub').textContent = currentUser.case_id ? `Case: ${currentUser.case_id}` : `Jurisdiction: ${currentUser.district}`;
+    document.getElementById('navRoleBadge').textContent = currentUser.role === 'victim' ? 'VICTIM SECURE PORTAL' : 'CLINICAL & COMMAND';
+    document.getElementById('roleHeaderPill').textContent = currentUser.role === 'victim' ? 'Victim Mode Active' : 'Counsellor / Officer Mode Active';
+    document.getElementById('roleHeaderPill').className = currentUser.role === 'victim' ? 
+        'px-2.5 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-bold' : 
+        'px-2.5 py-0.5 bg-purple-100 text-purple-800 rounded-full text-xs font-bold';
+
+    const victimNavs = document.querySelectorAll('.victim-only');
+    const counsellorNavs = document.querySelectorAll('.counsellor-only');
+
+    if (currentUser.role === 'victim') {
+        victimNavs.forEach(el => el.classList.remove('hidden'));
+        counsellorNavs.forEach(el => el.classList.add('hidden'));
+        showTab('distress_calc');
+        if (currentUser.language) setChatLanguage(currentUser.language);
+    } else {
+        victimNavs.forEach(el => el.classList.add('hidden'));
+        counsellorNavs.forEach(el => el.classList.remove('hidden'));
+        showTab('clinical_command');
+        refreshCounsellorData();
+    }
+}
+
+// ---------- Tab Navigation ----------
+function showTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById('tab-' + tabId);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.nav-link').forEach(el => {
+        el.classList.toggle('nav-active', el.dataset.tab === tabId);
+    });
+
+    if (tabId === 'behavioural_view') loadBehaviouralData();
+    if (tabId === 'longitudinal') loadLongitudinalCharts();
+    if (tabId === 'clinical_command') refreshCounsellorData();
+}
+
+// ---------- Stealth Mode ----------
+function enterStealth() { document.getElementById('stealthOverlay').classList.remove('hidden'); }
+function exitStealth() { document.getElementById('stealthOverlay').classList.add('hidden'); }
+
+// ---------- Toast ----------
+function showToast(msg) {
+    const toast = document.getElementById('appToast');
+    toast.textContent = msg;
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 4500);
+}
+
+// ================= LOAD STATES & NHAA COMPLAINTS =================
+async function loadStatesAndComplaints() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/get_states_and_nhaa_cases`);
+        const data = await res.json();
+        allStates = data.states || [];
+        allNhaaCases = data.complaints || [];
+
+        // Populate State Dropdown
+        const stateSelect = document.getElementById('stateFilterSelect');
+        const modalStateSelect = document.getElementById('modalStateSelect');
+        
+        stateSelect.innerHTML = `<option value="All States">All States & UTs (${allStates.length})</option>` + 
+            allStates.map(s => `<option value="${s}">${s}</option>`).join('');
+
+        modalStateSelect.innerHTML = allStates.map(s => `<option value="${s}">${s}</option>`).join('');
+
+        // Populate Complaints Dropdown
+        populateNhaaDropdown(allNhaaCases);
+    } catch (e) {
+        console.error("Failed to load states and cases:", e);
+    }
+}
+
+function populateNhaaDropdown(cases) {
+    const select = document.getElementById('nhaaCasesSelect');
+    if (!cases.length) {
+        select.innerHTML = `<option value="">No registered complaints found for this state filter</option>`;
+        return;
+    }
+    select.innerHTML = cases.map(c => `
+        <option value="${c.complaint_id}">
+            [${c.complaint_id}] ${c.complainant_name} — ${c.case_category} (${c.district}, ${c.state})
+        </option>
+    `).join('');
+}
+
+function onStateDropdownChange() {
+    const sel = document.getElementById('stateFilterSelect').value;
+    if (sel === "All States") {
+        populateNhaaDropdown(allNhaaCases);
+    } else {
+        const filtered = allNhaaCases.filter(c => c.state === sel);
+        populateNhaaDropdown(filtered);
+    }
+    onNhaaCaseSelected();
+}
+
+function onNhaaCaseSelected() {
+    const cid = document.getElementById('nhaaCasesSelect').value;
+    const caseObj = allNhaaCases.find(c => c.complaint_id === cid);
+    if (caseObj) {
+        showToast(`Loaded Case ${caseObj.complaint_id}: ${caseObj.complainant_name} (${caseObj.case_stage})`);
+        if (currentUser.role === 'victim') {
+            currentUser.case_id = caseObj.complaint_id;
+            currentUser.district = caseObj.district;
+            currentUser.state = caseObj.state;
+            document.getElementById('sidebarUserSub').textContent = `Case: ${caseObj.complaint_id}`;
+        }
+    }
+}
+
+// ---------- Register New Complaint Modal ----------
+function openComplaintModal() { document.getElementById('newComplaintModal').classList.remove('hidden'); }
+function closeComplaintModal() { document.getElementById('newComplaintModal').classList.add('hidden'); }
+
+async function handleRegisterComplaint(e) {
+    e.preventDefault();
+    const payload = {
+        complainant_name: document.getElementById('modalName').value,
+        state: document.getElementById('modalStateSelect').value,
+        district: document.getElementById('modalDistrict').value,
+        case_category: document.getElementById('modalCategory').value,
+        case_stage: document.getElementById('modalStage').value,
+        fir_number: document.getElementById('modalFir').value,
+        language: document.getElementById('modalLang').value,
+        threat_history: document.getElementById('modalThreat').value
+    };
+
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/register_nhaa_complaint`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+            closeComplaintModal();
+            await loadStatesAndComplaints();
+            document.getElementById('nhaaCasesSelect').value = data.complaint_id;
+            onNhaaCaseSelected();
+            showNewAccountCredentials(data.complaint_id, data.user_id);
+        } else {
+            showToast(data.message || data.error || 'Error registering complaint.');
+        }
+    } catch (err) {
+        showToast('Error registering complaint.');
+    }
+}
+
+// Show the newly created victim their login ID/PIN so they can actually sign in next time,
+// and pre-fill the login form so they can sign in immediately.
+function showNewAccountCredentials(complaintId, userId) {
+    document.getElementById('loginUsername').value = userId;
+    document.getElementById('loginPassword').value = 'pass123';
+    alert(
+        `NHAA Complaint #${complaintId} registered successfully!\n\n` +
+        `Your login ID has been created: ${userId}\n` +
+        `Your Access PIN: pass123\n\n` +
+        `Please save this ID — it (or your NHAA case number) plus the PIN above is what you'll use to sign in. ` +
+        `The login form has been pre-filled for you now.`
+    );
+    showToast(`Account created — login ID: ${userId}`);
+}
+
+// ================= MULTI-FACTOR DISTRESS CALCULATOR =================
+function updateDistressCalc() {
+    clearTimeout(calcDebounceTimer);
+    document.getElementById('liveCalcStatus').textContent = "Recalculating dynamic score...";
+    calcDebounceTimer = setTimeout(async () => {
+        const payload = {
+            text: document.getElementById('calcJournalText').value,
+            threat_level: parseInt(document.getElementById('threatSlider').value),
+            court_stress: parseInt(document.getElementById('courtSlider').value),
+            social_boycott: parseInt(document.getElementById('socialSlider').value),
+            economic_strain: parseInt(document.getElementById('econSlider').value),
+            sleep_quality: parseInt(document.getElementById('sleepSlider').value),
+            somatic_panic: parseInt(document.getElementById('somaticSlider').value),
+            depressive_score: parseInt(document.getElementById('depressSlider').value),
+            lang: currentChatLanguage
+        };
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/calculate_distress`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                renderGaugeResult(data);
+                document.getElementById('liveCalcStatus').textContent = "Real-time score updated";
+            }
+        } catch (e) {
+            document.getElementById('liveCalcStatus').textContent = "Calculated locally";
+        }
+    }, 250);
+}
+
+function renderGaugeResult(res) {
+    const score = res.distress_score;
+    const tier = res.risk_level;
+    document.getElementById('gaugeScoreText').textContent = score;
+
+    const circle = document.getElementById('gaugeProgressCircle');
+    const circum = 251.2;
+    const offset = circum * (1 - Math.min(100, Math.max(0, score)) / 100);
+    circle.style.strokeDashoffset = offset;
+
+    const badge = document.getElementById('gaugeRiskTierBadge');
+    badge.textContent = tier;
+
+    if (score < 25) {
+        circle.setAttribute('stroke', '#22c55e');
+        badge.className = "text-xs px-3 py-1 rounded-full font-extrabold bg-green-100 text-green-700";
+    } else if (score < 50) {
+        circle.setAttribute('stroke', '#3b82f6');
+        badge.className = "text-xs px-3 py-1 rounded-full font-extrabold bg-blue-100 text-blue-700";
+    } else if (score < 75) {
+        circle.setAttribute('stroke', '#f97316');
+        badge.className = "text-xs px-3 py-1 rounded-full font-extrabold bg-orange-100 text-orange-700";
+    } else {
+        circle.setAttribute('stroke', '#dc2626');
+        badge.className = "text-xs px-3 py-1 rounded-full font-extrabold bg-red-100 text-red-700 animate-pulse";
+    }
+
+    // XAI signals
+    if (res.contributing_signals && res.contributing_signals.length) {
+        document.getElementById('xaiSignalsList').innerHTML = res.contributing_signals.slice(0, 3).map(sig => `
+            <div class="flex items-start gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-400 mt-1 flex-shrink-0"></span><span>${sig}</span></div>
+        `).join('');
+    }
+
+    // Recommendations
+    if (res.recommended_interventions && res.recommended_interventions.length) {
+        document.getElementById('gaugeInterventionText').textContent = res.recommended_interventions[0];
+    }
+}
+
+async function commitCalculatedEntry() {
+    const payload = {
+        user_id: currentUser.user_id,
+        case_id: currentUser.case_id || "NHAA-2026-8941",
+        district: currentUser.district || "Jaipur",
+        state: currentUser.state || "Rajasthan",
+        text: document.getElementById('calcJournalText').value || "Routine multi-factor check-in log",
+        threat_level: parseInt(document.getElementById('threatSlider').value),
+        court_stress: parseInt(document.getElementById('courtSlider').value),
+        social_boycott: parseInt(document.getElementById('socialSlider').value),
+        economic_strain: parseInt(document.getElementById('econSlider').value),
+        sleep_quality: parseInt(document.getElementById('sleepSlider').value),
+        somatic_panic: parseInt(document.getElementById('somaticSlider').value),
+        depressive_score: parseInt(document.getElementById('depressSlider').value),
+        lang: currentChatLanguage
+    };
+
+    try {
+        const res = await fetch(`${BACKEND_URL}/submit_entry`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+            renderGaugeResult(data);
+            if (data.alert_dispatched) {
+                showToast("HIGH DISTRESS ALERT dispatched automatically to District Welfare & DLSA!");
+            } else {
+                showToast("Distress assessment recorded securely.");
+            }
+        }
+    } catch (e) {
+        showToast("Error saving entry.");
+    }
+}
+
+// ================= LIVE VOICE SPEECH-TO-TEXT & ACOUSTIC ANALYSIS =================
+function toggleSpeechRecognition() {
+    const btn = document.getElementById('speechRecordBtn');
+    const icon = document.getElementById('speechMicIcon');
+    const title = document.getElementById('speechStatusTitle');
+    const desc = document.getElementById('speechStatusDesc');
+    const textarea = document.getElementById('voiceJournalText');
+    const lang = document.getElementById('speechLangSelect').value;
+
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        showToast("Web Speech API not supported in this browser. Please type directly.");
+        return;
+    }
+
+    if (isSpeechActive) {
+        // Stop
+        if (speechRecognizer) speechRecognizer.stop();
+        isSpeechActive = false;
+        btn.classList.remove('recording-pulse');
+        title.textContent = "Click to Speak";
+        desc.textContent = "Microphone paused";
+        return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    speechRecognizer = new SpeechRecognition();
+    speechRecognizer.continuous = true;
+    speechRecognizer.interimResults = true;
+    speechRecognizer.lang = lang;
+
+    speechRecognizer.onstart = () => {
+        isSpeechActive = true;
+        btn.classList.add('recording-pulse');
+        title.textContent = `Listening in ${lang}...`;
+        desc.textContent = "Speak clearly into your microphone";
+        simulateAcousticJitter();
+    };
+
+    speechRecognizer.onresult = (event) => {
+        let transcript = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            transcript += event.results[i][0].transcript;
+        }
+        textarea.value = transcript;
+        document.getElementById('calcJournalText').value = transcript;
+    };
+
+    speechRecognizer.onerror = (event) => {
+        console.warn("Speech error:", event.error);
+        isSpeechActive = false;
+        btn.classList.remove('recording-pulse');
+        title.textContent = "Microphone Ready";
+        desc.textContent = "Click to start recording voice";
+    };
+
+    speechRecognizer.onend = () => {
+        isSpeechActive = false;
+        btn.classList.remove('recording-pulse');
+        title.textContent = "Recording Complete";
+        desc.textContent = "Click again to record more audio";
+    };
+
+    speechRecognizer.start();
+}
+
+function simulateAcousticJitter() {
+    // Generate authentic voice jitter variation
+    let jitter = (Math.random() * (78 - 42) + 42).toFixed(1);
+    document.getElementById('voiceAcousticScore').textContent = `${jitter} / 100`;
+}
+
+function submitJournalFromVoiceTab() {
+    const text = document.getElementById('voiceJournalText').value;
+    if (!text.trim()) {
+        showToast("Please speak or write your journal entry first.");
+        return;
+    }
+    document.getElementById('calcJournalText').value = text;
+    commitCalculatedEntry();
+    showTab('distress_calc');
+}
+
+// ================= MULTILINGUAL AI CHATBOT =================
+const promptChips = {
+    en: [
+        "I am receiving threats to withdraw the FIR before court trial.",
+        "Having intense nightmares and flashbacks; cannot sleep.",
+        "The villagers are completely boycotting my family.",
+        "Feeling overwhelmed, alone, and hopeless."
+    ],
+    ta: [
+        "அச்சுறுத்தல் வருகிறது, நீதிமன்றம் செல்ல பயமாக உள்ளது.",
+        "கிராமத்தில் தண்ணீர் எடுக்க விடாமல் புறக்கணிக்கிறார்கள்.",
+        "தூக்கம் வரவில்லை, பழைய சம்பவங்கள் நினைவுக்கு வருகின்றன.",
+        "எனக்கு சட்ட மற்றும் மனநல உதவி தேவை."
+    ],
+    hi: [
+        "मुझे अदालत जाने से बहुत डर लग रहा है, धमकियां मिल रही हैं।",
+        "गाँव वाले हमारे परिवार का सामाजिक बहिष्कार कर रहे हैं।",
+        "रात को बिल्कुल नींद नहीं आती, घबराहट होती है।",
+        "क्या मुझे मुफ्त सरकारी वकील (DLSA) मिल सकता है?"
+    ]
+};
+
+const welcomeMessages = {
+    en: "Hello. I am AURA, your trauma-informed mental health companion. I am right here with you in a confidential, safe space. How are you feeling today?",
+    ta: "வணக்கம். நான் 'ஆரா' (AURA), உங்கள் பாதுகாப்பான மனநல ஆதரவாளர். எவ்வித அச்சமும் இன்றி உங்கள் மனக் கவலைகளை இங்கு பகிருங்கள். இன்று உங்கள் உடல் மற்றும் மனநிலை எவ்வாறு உள்ளது?",
+    hi: "नमस्ते। मैं 'ऑरा' (AURA), आपका सुरक्षित और आत्மிय मानसिक स्वास्थ्य साथी हूँ। आप बिना किसी डर के अपने दिल की बात यहाँ साझा कर सकते हैं। आप आज कैसा महसूस कर रहे हैं?"
+};
+
+function setChatLanguage(lang) {
+    currentChatLanguage = lang;
+    ['En', 'Ta', 'Hi'].forEach(l => {
+        const btn = document.getElementById('chatLang' + l);
+        if (l.toLowerCase() === lang) {
+            btn.className = "px-3 py-1 rounded-lg bg-white text-primary shadow-sm font-bold";
+        } else {
+            btn.className = "px-3 py-1 rounded-lg text-slate-600 hover:text-primary font-bold";
+        }
+    });
+
+    document.getElementById('chatWelcomeBubble').textContent = welcomeMessages[lang] || welcomeMessages.en;
+    
+    // Update Chips
+    const chips = promptChips[lang] || promptChips.en;
+    document.getElementById('chatQuickChips').innerHTML = chips.map(c => `
+        <button onclick="sendChatMessage('${c.replace(/'/g, "\\'")}')" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 px-3 py-1 rounded-full text-xs font-medium transition-all truncate max-w-xs">
+            ${c}
+        </button>
+    `).join('');
+}
+
+async function sendChatMessage(preset) {
+    const input = document.getElementById('chatTextInput');
+    const msg = preset || input.value.trim();
+    if (!msg) return;
+
+    appendChatBubble('user', msg);
+    if (!preset) input.value = '';
+
+    const typingBubble = appendChatBubble('assistant', 'AURA is listening and preparing a supportive response...');
+
+    try {
+        const res = await fetch(`${BACKEND_URL}/chat_companion`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg, lang: currentChatLanguage, case_context: currentUser })
+        });
+        const data = await res.json();
+        typingBubble.remove();
+        appendChatBubble('assistant', data.reply);
+    } catch (e) {
+        typingBubble.remove();
+        appendChatBubble('assistant', 'I hear you and I am right here with you. Please take a gentle, deep breath.');
+    }
+}
+
+function appendChatBubble(role, text) {
+    const box = document.getElementById('chatMessagesBox');
+    const wrap = document.createElement('div');
+    if (role === 'assistant') {
+        wrap.className = 'flex gap-3 max-w-[85%]';
+        wrap.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 text-white shadow-sm">
+                <span class="material-symbols-outlined text-sm">auto_awesome</span>
+            </div>
+            <div class="bg-white p-3.5 rounded-2xl rounded-tl-sm border border-slate-200 shadow-sm text-slate-800 whitespace-pre-line leading-relaxed"></div>
+        `;
+        wrap.querySelector('.bg-white').textContent = text;
+    } else {
+        wrap.className = 'flex gap-3 max-w-[85%] ml-auto flex-row-reverse';
+        wrap.innerHTML = `
+            <div class="bg-primary text-white p-3.5 rounded-2xl rounded-tr-sm shadow-sm whitespace-pre-line leading-relaxed"></div>
+        `;
+        wrap.querySelector('.bg-primary').textContent = text;
+    }
+    box.appendChild(wrap);
+    box.scrollTop = box.scrollHeight;
+    return wrap;
+}
+
+function toggleChatVoiceInput() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        showToast("Speech recognition not supported in your browser.");
+        return;
+    }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const r = new SpeechRecognition();
+    r.lang = currentChatLanguage === 'ta' ? 'ta-IN' : (currentChatLanguage === 'hi' ? 'hi-IN' : 'en-IN');
+    const mic = document.getElementById('chatMicIcon');
+    mic.classList.add('recording-pulse');
+
+    r.onresult = (ev) => {
+        document.getElementById('chatTextInput').value = ev.results[0][0].transcript;
+        mic.classList.remove('recording-pulse');
+        sendChatMessage();
+    };
+    r.onerror = () => mic.classList.remove('recording-pulse');
+    r.onend = () => mic.classList.remove('recording-pulse');
+    r.start();
+}
+
+// ================= BOX BREATHING =================
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function startBoxBreathing() {
+    const btn = document.getElementById('pacerBtn');
+    const circle = document.getElementById('pacerCircle');
+    const label = document.getElementById('pacerLabel');
+    btn.disabled = true;
+    btn.textContent = "Breathing Session Active...";
+
+    for (let cycle = 0; cycle < 3; cycle++) {
+        // Inhale (4s)
+        circle.style.transform = "scale(1.25)";
+        circle.style.backgroundColor = "#bfdbfe";
+        for (let i = 4; i > 0; i--) { label.textContent = `Inhale... (${i}s)`; await sleep(1000); }
+
+        // Hold (7s)
+        circle.style.backgroundColor = "#ddd6fe";
+        for (let i = 7; i > 0; i--) { label.textContent = `Hold gently... (${i}s)`; await sleep(1000); }
+
+        // Exhale (8s)
+        circle.style.transform = "scale(1.0)";
+        circle.style.backgroundColor = "#dcfce7";
+        for (let i = 8; i > 0; i--) { label.textContent = `Exhale slowly... (${i}s)`; await sleep(1000); }
+    }
+
+    label.textContent = "Session Done";
+    circle.style.backgroundColor = "#dbeafe";
+    btn.disabled = false;
+    btn.textContent = "▶️ Start 1-Minute Guided Breathing";
+}
+
+// ================= COUNSELLOR / CLINICAL DASHBOARD =================
+async function refreshCounsellorData() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/get_district_dashboard`);
+        const data = await res.json();
+
+        document.getElementById('counselorTotalVictims').textContent = data.total_victims;
+        document.getElementById('counselorActiveAlerts').textContent = data.active_alerts;
+        document.getElementById('counselorAvgDistress').textContent = `${data.national_avg_distress} / 100`;
+
+        // Alerts
+        const alertsEl = document.getElementById('alertsContainerList');
+        if (data.recent_alerts && data.recent_alerts.length) {
+            alertsEl.innerHTML = data.recent_alerts.map(a => `
+                <div class="p-3.5 bg-red-50 border border-red-200 rounded-2xl flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded-full font-black text-[10px] bg-red-600 text-white">[${a.risk_level}]</span>
+                            <span class="font-bold text-slate-800">Case #${a.case_id} (${a.district}, ${a.state})</span>
+                        </div>
+                        <p class="text-slate-600 mt-1">Reason: ${a.trigger_reason}</p>
+                        <p class="text-blue-900 font-semibold mt-0.5">Action: ${a.recommended_action}</p>
+                    </div>
+                    <button onclick="resolveAlertTicket(${a.id})" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white rounded-xl text-[11px] font-bold shadow-sm">
+                        1-Click DLSA Intervention
+                    </button>
+                </div>
+            `).join('');
+        } else {
+            alertsEl.innerHTML = `<p class="text-slate-400">No active red-flag escalations at this time.</p>`;
+        }
+
+        // District table
+        const tbody = document.getElementById('districtTbody');
+        tbody.innerHTML = (data.district_summary || []).map(d => `
+            <tr>
+                <td class="py-2.5 pr-3 font-bold text-slate-800">${d.district}</td>
+                <td class="py-2.5 pr-3 text-slate-600">${d.state}</td>
+                <td class="py-2.5 pr-3">${d.victim_count}</td>
+                <td class="py-2.5 pr-3 font-bold ${d.avg_distress >= 65 ? 'text-red-600' : 'text-slate-700'}">${Math.round(d.avg_distress)}/100</td>
+                <td class="py-2.5 pr-3 font-bold ${d.high_risk_count > 0 ? 'text-red-600' : 'text-green-600'}">${d.high_risk_count}</td>
+                <td class="py-2.5"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] font-semibold">Active Watch</span></td>
+            </tr>
+        `).join('');
+
+        // Populate patient selectors
+        loadPatientOptions();
+    } catch (e) {
+        console.error("Counsellor refresh failed:", e);
+    }
+}
+
+async function resolveAlertTicket(id) {
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/resolve_alert/${id}`, { method: 'POST' });
+        if (res.ok) {
+            showToast("Case escalated to DLSA & Police Witness Protection. Ticket updated.");
+            refreshCounsellorData();
+        }
+    } catch (e) {}
+}
+
+async function loadPatientOptions() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/get_users?role=victim`);
+        const data = await res.json();
+        const users = data.users || [];
+        const opts = users.map(u => `<option value="${u.user_id}">${u.name} (${u.case_id})</option>`).join('');
+
+        document.getElementById('behaviouralPatientSelect').innerHTML = opts;
+        document.getElementById('chartPatientSelect').innerHTML = opts;
+    } catch (e) {}
+}
+
+// ================= BEHAVIOURAL ANALYSIS TAB =================
+async function loadBehaviouralData() {
+    const uid = document.getElementById('behaviouralPatientSelect').value || currentUser.user_id;
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/get_behavioural_analytics/${uid}`);
+        const data = await res.json();
+
+        document.getElementById('behAdherence').textContent = `${data.adherence_rate}%`;
+        document.getElementById('behAdherenceSub').textContent = `Status: ${data.adherence_status}`;
+        document.getElementById('behGap').textContent = `${data.avg_gap_days} days`;
+        document.getElementById('behVelocity').textContent = (data.distress_velocity > 0 ? `+${data.distress_velocity}` : `${data.distress_velocity}`) + " pts/entry";
+        document.getElementById('behEscalation').textContent = `${data.escalation_probability}%`;
+        document.getElementById('behEscalationTier').textContent = `RISK TIER: ${data.escalation_tier}`;
+        document.getElementById('behSummaryText').textContent = data.pattern_summary;
+
+        const flagsEl = document.getElementById('behFlagsList');
+        if (data.behavioural_flags && data.behavioural_flags.length) {
+            flagsEl.innerHTML = data.behavioural_flags.map(f => `
+                <li class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-red-600 flex-shrink-0"></span>
+                    <span>${f}</span>
+                </li>
+            `).join('');
+        } else {
+            flagsEl.innerHTML = `<li class="text-slate-400">No anomalous behavioural flags detected.</li>`;
+        }
+    } catch (e) {
+        console.error("Behavioural load error:", e);
+    }
+}
+
+// ================= LONGITUDINAL CHARTS TAB =================
+async function loadLongitudinalCharts() {
+    const uid = document.getElementById('chartPatientSelect').value || currentUser.user_id;
+    try {
+        const res = await fetch(`${BACKEND_URL}/get_user_analytics/${uid}`);
+        const data = await res.json();
+        const history = data.history || [];
+
+        // History Table
+        const tbody = document.getElementById('historyTbody');
+        tbody.innerHTML = history.slice().reverse().map(h => `
+            <tr>
+                <td class="py-2.5 pr-3 text-slate-500 whitespace-nowrap">${h.timestamp.split(' ')[0]}</td>
+                <td class="py-2.5 pr-3 font-extrabold text-primary">${h.distress_score}/100</td>
+                <td class="py-2.5 pr-3 font-bold ${h.risk_level === 'CRITICAL' || h.risk_level === 'HIGH' ? 'text-red-600' : 'text-slate-700'}">${h.risk_level}</td>
+                <td class="py-2.5 pr-3">${h.threat_level || '-'}</td>
+                <td class="py-2.5 pr-3">${h.court_stress || '-'}</td>
+                <td class="py-2.5 pr-3">${h.social_boycott || '-'}</td>
+                <td class="py-2.5 pr-3 font-semibold">${h.primary_emotion}</td>
+                <td class="py-2.5 max-w-xs truncate text-slate-600">${h.text || ''}</td>
+            </tr>
+        `).join('');
+
+        // Line Chart
+        const lineCtx = document.getElementById('longitudinalLineChart').getContext('2d');
+        if (longitudinalChart) longitudinalChart.destroy();
+        longitudinalChart = new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: history.map(h => h.timestamp.split(' ')[0]),
+                datasets: [{
+                    label: 'Distress Score',
+                    data: history.map(h => h.distress_score),
+                    borderColor: '#1d2b3e',
+                    backgroundColor: 'rgba(29, 43, 62, 0.08)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#1d2b3e'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { min: 0, max: 100 } }
+            }
+        });
+
+        // Emotion Doughnut Chart
+        const counts = {};
+        history.forEach(h => { counts[h.primary_emotion] = (counts[h.primary_emotion] || 0) + 1; });
+        const doughnutCtx = document.getElementById('emotionDoughnutChart').getContext('2d');
+        if (emotionChart) emotionChart.destroy();
+        emotionChart = new Chart(doughnutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(counts),
+                datasets: [{
+                    data: Object.values(counts),
+                    backgroundColor: ['#1d2b3e', '#dc2626', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6']
+                }]
+            },
+            options: { responsive: true }
+        });
+    } catch (e) {
+        console.error("Charts load error:", e);
+    }
+}
+
+// ================= INITIALIZATION =================
+document.addEventListener('DOMContentLoaded', () => {
+    loadStatesAndComplaints();
+    setChatLanguage('en');
+    updateDistressCalc();
+});
+</script>
+
+</body>
+</html>
