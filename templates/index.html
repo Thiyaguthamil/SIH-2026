@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>AURA | AI Dynamic Mental Health & Distress Monitoring (SIH26094)</title>
+    <title>AURA | AI Dynamic Mental Health & Distress Monitoring</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -72,8 +72,6 @@
                 <span class="material-symbols-outlined text-3xl">shield_with_heart</span>
             </div>
             <div class="flex items-center justify-center gap-2 mb-1">
-                <span class="px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-bold uppercase tracking-wider">SIH26094</span>
-                <span class="px-2.5 py-0.5 bg-purple-100 text-purple-800 rounded-full text-xs font-bold">NHAA 14566</span>
             </div>
             <h2 class="text-2xl sm:text-3xl font-black text-primary">AURA National Monitoring Gateway</h2>
             <p class="text-xs sm:text-sm text-slate-500 mt-1">AI-Powered Dynamic Mental Health & Crisis Escalation System for Victims of Atrocities</p>
@@ -152,7 +150,7 @@
         <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
             <h3 class="text-base font-bold text-primary flex items-center gap-2">
                 <span class="material-symbols-outlined text-blue-600">post_add</span>
-                <span>Register New Complaint via NHAA 14566</span>
+                <span>Register New Complaint</span>
             </h3>
             <button onclick="closeComplaintModal()" class="text-slate-400 hover:text-slate-700">
                 <span class="material-symbols-outlined">close</span>
@@ -322,7 +320,6 @@
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-bold uppercase">SIH Problem ID: 26094</span>
                             <span id="roleHeaderPill" class="px-2.5 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-bold">Victim Mode Active</span>
                         </div>
                         <h2 class="text-xl md:text-2xl font-black text-primary mt-1">AI Dynamic Mental Health Monitoring System</h2>
@@ -351,7 +348,7 @@
                     <div class="md:col-span-2">
                         <label class="block mb-1 text-slate-500 uppercase tracking-wider flex items-center gap-1">
                             <span class="material-symbols-outlined text-sm text-purple-600">receipt_long</span>
-                            <span>Complaints Registered through NHAA (14566)</span>
+                            <span>Registered Complaints</span>
                         </label>
                         <select id="nhaaCasesSelect" onchange="onNhaaCaseSelected()" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-primary"></select>
                     </div>
@@ -363,8 +360,8 @@
                 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     
-                    <!-- Left: Multi-Factor Inputs Form -->
-                    <div class="lg:col-span-8 glass-panel rounded-3xl p-6 space-y-5">
+                    <!-- Multi-Factor Inputs Form -->
+                    <div class="lg:col-span-12 glass-panel rounded-3xl p-6 space-y-5">
                         <div class="flex items-center justify-between border-b border-slate-200 pb-3">
                             <div>
                                 <h3 class="text-lg font-black text-primary flex items-center gap-2">
@@ -464,42 +461,6 @@
                                 <span class="material-symbols-outlined text-base">save</span>
                                 <span>Save & Dispatch Assessment</span>
                             </button>
-                        </div>
-                    </div>
-
-                    <!-- Right: Dynamic Gauge, Risk Tier & XAI Breakdown -->
-                    <div class="lg:col-span-4 glass-panel rounded-3xl p-6 flex flex-col justify-between text-center gap-4">
-                        <div class="flex items-center justify-between">
-                            <h4 class="text-sm font-black text-primary uppercase tracking-wider">Dynamic Distress Score</h4>
-                            <span id="gaugeRiskTierBadge" class="text-xs px-3 py-1 rounded-full font-extrabold bg-red-100 text-red-700">ELEVATED</span>
-                        </div>
-
-                        <!-- Circular Meter -->
-                        <div class="relative w-44 h-44 mx-auto my-1">
-                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                <circle cx="50" cy="50" fill="none" r="40" stroke="#e2e8f0" stroke-width="8"></circle>
-                                <circle id="gaugeProgressCircle" class="transition-all duration-700 ease-out" cx="50" cy="50" fill="none" r="40" stroke="#f97316" stroke-dasharray="251.2" stroke-dashoffset="100" stroke-width="8" stroke-linecap="round"></circle>
-                            </svg>
-                            <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                <span id="gaugeScoreText" class="text-4xl font-black text-primary">68</span>
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Out of 100</span>
-                            </div>
-                        </div>
-
-                        <!-- Primary Contributing Signals -->
-                        <div class="space-y-1.5 text-left text-xs bg-slate-50 p-3 rounded-2xl border border-slate-200">
-                            <p class="font-bold text-slate-700 text-[11px] uppercase tracking-wider">Explainable AI Drivers (XAI):</p>
-                            <div id="xaiSignalsList" class="space-y-1 text-slate-600">
-                                <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500"></span><span>Threat & Intimidation Intensity (18%)</span></div>
-                                <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Court Hearing Dread (14%)</span></div>
-                                <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-purple-500"></span><span>Social Boycott Strain (12%)</span></div>
-                            </div>
-                        </div>
-
-                        <!-- Statutory Interventions Box -->
-                        <div id="gaugeInterventionsBox" class="p-3 rounded-2xl bg-blue-50/90 border border-blue-200 text-left text-xs text-blue-950 font-medium space-y-1">
-                            <p class="font-bold text-blue-900">Recommended Statutory Relief:</p>
-                            <p id="gaugeInterventionText">Section 15A Witness Protection & DLSA Legal Escort</p>
                         </div>
                     </div>
 
@@ -1245,40 +1206,53 @@ function updateDistressCalc() {
 function renderGaugeResult(res) {
     const score = res.distress_score;
     const tier = res.risk_level;
-    document.getElementById('gaugeScoreText').textContent = score;
-
+    const scoreEl = document.getElementById('gaugeScoreText');
     const circle = document.getElementById('gaugeProgressCircle');
-    const circum = 251.2;
-    const offset = circum * (1 - Math.min(100, Math.max(0, score)) / 100);
-    circle.style.strokeDashoffset = offset;
-
     const badge = document.getElementById('gaugeRiskTierBadge');
-    badge.textContent = tier;
+    const xaiEl = document.getElementById('xaiSignalsList');
+    const interventionEl = document.getElementById('gaugeInterventionText');
 
-    if (score < 25) {
-        circle.setAttribute('stroke', '#22c55e');
-        badge.className = "text-xs px-3 py-1 rounded-full font-extrabold bg-green-100 text-green-700";
-    } else if (score < 50) {
-        circle.setAttribute('stroke', '#3b82f6');
-        badge.className = "text-xs px-3 py-1 rounded-full font-extrabold bg-blue-100 text-blue-700";
-    } else if (score < 75) {
-        circle.setAttribute('stroke', '#f97316');
-        badge.className = "text-xs px-3 py-1 rounded-full font-extrabold bg-orange-100 text-orange-700";
-    } else {
-        circle.setAttribute('stroke', '#dc2626');
-        badge.className = "text-xs px-3 py-1 rounded-full font-extrabold bg-red-100 text-red-700 animate-pulse";
+    if (scoreEl) scoreEl.textContent = score;
+
+    if (circle) {
+        const circum = 251.2;
+        const offset = circum * (1 - Math.min(100, Math.max(0, score)) / 100);
+        circle.style.strokeDashoffset = offset;
+
+        if (score < 25) {
+            circle.setAttribute('stroke', '#22c55e');
+        } else if (score < 50) {
+            circle.setAttribute('stroke', '#3b82f6');
+        } else if (score < 75) {
+            circle.setAttribute('stroke', '#f97316');
+        } else {
+            circle.setAttribute('stroke', '#dc2626');
+        }
+    }
+
+    if (badge) {
+        badge.textContent = tier;
+        if (score < 25) {
+            badge.className = "text-xs px-3 py-1 rounded-full font-extrabold bg-green-100 text-green-700";
+        } else if (score < 50) {
+            badge.className = "text-xs px-3 py-1 rounded-full font-extrabold bg-blue-100 text-blue-700";
+        } else if (score < 75) {
+            badge.className = "text-xs px-3 py-1 rounded-full font-extrabold bg-orange-100 text-orange-700";
+        } else {
+            badge.className = "text-xs px-3 py-1 rounded-full font-extrabold bg-red-100 text-red-700 animate-pulse";
+        }
     }
 
     // XAI signals
-    if (res.contributing_signals && res.contributing_signals.length) {
-        document.getElementById('xaiSignalsList').innerHTML = res.contributing_signals.slice(0, 3).map(sig => `
+    if (xaiEl && res.contributing_signals && res.contributing_signals.length) {
+        xaiEl.innerHTML = res.contributing_signals.slice(0, 3).map(sig => `
             <div class="flex items-start gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-400 mt-1 flex-shrink-0"></span><span>${sig}</span></div>
         `).join('');
     }
 
     // Recommendations
-    if (res.recommended_interventions && res.recommended_interventions.length) {
-        document.getElementById('gaugeInterventionText').textContent = res.recommended_interventions[0];
+    if (interventionEl && res.recommended_interventions && res.recommended_interventions.length) {
+        interventionEl.textContent = res.recommended_interventions[0];
     }
 }
 
