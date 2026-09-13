@@ -12,7 +12,8 @@ from database import (
     init_db, authenticate_user, get_all_states, get_all_nhaa_complaints,
     register_nhaa_complaint, save_entry, get_user_history, save_contact,
     get_contact, get_all_alerts, get_all_users, get_district_dashboard_data,
-    resolve_alert
+    resolve_alert, get_all_assignments, assign_counsellor, get_unassigned_victims,
+    get_counsellor_workload, get_state_officer_dashboard
 )
 import traceback
 
@@ -253,9 +254,12 @@ def district_dashboard_route():
 
 @app.route("/get_users", methods=["GET"])
 def get_users_route():
-    role = request.args.get("role")
-    users = get_all_users(role=role)
-    return jsonify({"users": users})
+    try:
+        role = request.args.get("role")
+        users = get_all_users(role=role)
+        return jsonify({"users": users})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/save_emergency_contact", methods=["POST"])
 def save_contact_route():
@@ -275,14 +279,86 @@ def save_contact_route():
 
 @app.route("/get_all_alerts", methods=["GET"])
 def get_alerts_route():
-    alerts = get_all_alerts()
-    return jsonify(alerts)
+    try:
+        alerts = get_all_alerts()
+        return jsonify(alerts)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/resolve_alert/<int:alert_id>", methods=["POST"])
 def resolve_alert_route(alert_id):
     try:
         res = resolve_alert(alert_id)
         return jsonify(res)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ================= STATE OFFICER APIS =================
+
+@app.route("/api/state_officer/dashboard", methods=["GET"])
+def state_officer_dashboard():
+    try:
+        data = get_state_officer_dashboard()
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/state_officer/assignments", methods=["GET"])
+def state_officer_assignments():
+    try:
+        assignments = get_all_assignments()
+        return jsonify(assignments)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/state_officer/assign", methods=["POST"])
+def state_officer_assign():
+    try:
+        data = request.json or {}
+        victim_id = (data.get("victim_id") or "").strip()
+        counsellor_id = (data.get("counsellor_id") or "").strip()
+        notes = (data.get("notes") or "").strip()
+        if not victim_id or not counsellor_id:
+            return jsonify({"error": "Both victim_id and counsellor_id are required"}), 400
+        result = assign_counsellor(victim_id, counsellor_id, notes)
+        if "error" in result:
+            return jsonify(result), 400
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/state_officer/counsellors", methods=["GET"])
+def state_officer_counsellors():
+    try:
+        counsellors = get_counsellor_workload()
+        return jsonify(counsellors)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/state_officer/victims", methods=["GET"])
+def state_officer_victims():
+    try:
+        unassigned = get_unassigned_victims()
+        all_victims = get_all_users(role="victim")
+        # Enrich all victims with assignment status
+        assignments = get_all_assignments()
+        active_map = {}
+        for a in assignments:
+            if a["status"] == "ACTIVE":
+                active_map[a["victim_id"]] = a
+        for v in all_victims:
+            active = active_map.get(v["user_id"])
+            if active:
+                v["assigned"] = True
+                v["assigned_to"] = active.get("counsellor_name", "")
+                v["assigned_to_id"] = active.get("counsellor_id", "")
+                v["assignment_id"] = active.get("id")
+            else:
+                v["assigned"] = False
+                v["assigned_to"] = ""
+                v["assigned_to_id"] = ""
+                v["assignment_id"] = None
+        return jsonify({"all_victims": all_victims, "unassigned": unassigned})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

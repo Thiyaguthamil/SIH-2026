@@ -127,6 +127,20 @@ def init_db():
         )
     """)
 
+    # 6. Assignments Table (State Officer manages victim-counsellor assignments)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS assignments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            victim_id TEXT NOT NULL,
+            counsellor_id TEXT NOT NULL,
+            assigned_date TEXT,
+            status TEXT DEFAULT 'ACTIVE',
+            notes TEXT,
+            FOREIGN KEY (victim_id) REFERENCES users(user_id),
+            FOREIGN KEY (counsellor_id) REFERENCES users(user_id)
+        )
+    """)
+
     conn.commit()
 
     # Pre-seed realistic demo data
@@ -145,7 +159,8 @@ def seed_system_data(conn):
         ("victim_tamil_02", "Murugan Selvam (Atrocity Survivor)", "victim", "pass123", "NHAA-2026-4412", "Tamil Nadu", "Madurai", "+91 9443123456", "ta"),
         ("victim_hindi_03", "Sunita Devi (Witness Facing Intimidation)", "victim", "pass123", "NHAA-2026-7731", "Madhya Pradesh", "Bhopal", "+91 9755123456", "hi"),
         ("counsellor_01", "Dr. Ananya Sharma (Clinical Psychologist & DLSA State Coordinator)", "counsellor", "counsel123", "", "Rajasthan", "Jaipur", "+91 9829988776", "en"),
-        ("counsellor_dlsa_tn", "Adv. K. Venkatesh (Madurai DLSA Legal Counsel)", "counsellor", "counsel123", "", "Tamil Nadu", "Madurai", "+91 9444876543", "ta")
+        ("counsellor_dlsa_tn", "Adv. K. Venkatesh (Madurai DLSA Legal Counsel)", "counsellor", "counsel123", "", "Tamil Nadu", "Madurai", "+91 9444876543", "ta"),
+        ("state_officer_01", "Dr. Priya Nair (State SC/ST Welfare Officer)", "state_officer", "state123", "", "Tamil Nadu", "Chennai", "+91 9840012345", "en")
     ]
     cur.executemany("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", users)
 
@@ -302,7 +317,7 @@ def authenticate_user(username, password, role="victim"):
     # Allow login with either the account's user_id OR its NHAA case_id,
     # since the login screen advertises both as valid identifiers.
     cur.execute("""
-        SELECT * FROM users
+        SELECT user_id, name, role, case_id, state, district, phone, language FROM users
         WHERE password = ? AND role = ?
           AND (user_id = ? OR (case_id != '' AND case_id = ?))
     """, (password, role, username, username))
@@ -427,9 +442,9 @@ def get_all_users(role=None):
     conn = connect_db()
     cur = conn.cursor()
     if role:
-        cur.execute("SELECT * FROM users WHERE role = ? ORDER BY name ASC", (role,))
+        cur.execute("SELECT user_id, name, role, case_id, state, district, phone, language FROM users WHERE role = ? ORDER BY name ASC", (role,))
     else:
-        cur.execute("SELECT * FROM users ORDER BY name ASC")
+        cur.execute("SELECT user_id, name, role, case_id, state, district, phone, language FROM users ORDER BY name ASC")
     rows = [dict(r) for r in cur.fetchall()]
     conn.close()
     return rows
@@ -512,6 +527,161 @@ def get_district_dashboard_data():
         "national_avg_distress": round(avg_score, 1),
         "district_summary": district_summary,
         "recent_alerts": recent_alerts
+    }
+
+# ================= STATE OFFICER HELPER FUNCTIONS =================
+
+def get_all_assignments():
+    conn = connect_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT a.id, a.victim_id, a.counsellor_id, a.assigned_date, a.status, a.notes,
+               v.name as victim_name, v.state as victim_state, v.district as victim_district,
+               c.name as counsellor_name, c.state as counsellor_state
+        FROM assignments a
+        LEFT JOIN users v ON a.victim_id = v.user_id
+        LEFT JOIN users c ON a.counsellor_id = c.user_id
+        ORDER BY a.assigned_date DESC
+    """)
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return rows
+
+def assign_counsellor(victim_id, counsellor_id, notes=""):
+    conn = connect_db()
+    cur = conn.cursor()
+    # Validate victim
+    cur.execute("SELECT role FROM users WHERE user_id = ?", (victim_id,))
+    victim_row = cur.fetchone()
+    if not victim_row:
+        conn.close()
+        return {"error": f"Victim '{victim_id}' not found"}
+    if victim_row[0] != "victim":
+        conn.close()
+        return {"error": f"User '{victim_id}' is not a victim"}
+    # Validate counsellor
+    cur.execute("SELECT role FROM users WHERE user_id = ?", (counsellor_id,))
+    counsellor_row = cur.fetchone()
+    if not counsellor_row:
+        conn.close()
+        return {"error": f"Counsellor '{counsellor_id}' not found"}
+    if counsellor_row[0] != "counsellor":
+        conn.close()
+        return {"error": f"User '{counsellor_id}' is not a counsellor"}
+    # Check for existing ACTIVE assignment
+    cur.execute("SELECT id FROM assignments WHERE victim_id = ? AND status = 'ACTIVE'", (victim_id,))
+    existing = cur.fetchone()
+    if existing:
+        cur.execute("UPDATE assignments SET status = 'REASSIGNED' WHERE id = ?", (existing[0],))
+    # Create new assignment
+    from datetime import datetime
+    assigned_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cur.execute(
+        "INSERT INTO assignments (victim_id, counsellor_id, assigned_date, status, notes) VALUES (?, ?, ?, 'ACTIVE', ?)",
+        (victim_id, counsellor_id, assigned_date, notes)
+    )
+    assignment_id = cur.lastrowid
+    conn.commit()
+    # Return the new assignment
+    cur.execute("""
+        SELECT a.id, a.victim_id, a.counsellor_id, a.assigned_date, a.status, a.notes,
+               v.name as victim_name, c.name as counsellor_name
+        FROM assignments a
+        LEFT JOIN users v ON a.victim_id = v.user_id
+        LEFT JOIN users c ON a.counsellor_id = c.user_id
+        WHERE a.id = ?
+    """, (assignment_id,))
+    result = dict(cur.fetchone())
+    conn.close()
+    return {"success": True, "assignment": result}
+
+def get_unassigned_victims():
+    conn = connect_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT u.user_id, u.name, u.state, u.district, u.case_id, u.phone
+        FROM users u
+        WHERE u.role = 'victim'
+        AND u.user_id NOT IN (
+            SELECT victim_id FROM assignments WHERE status = 'ACTIVE'
+        )
+        ORDER BY u.state, u.district
+    """)
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return rows
+
+def get_counsellor_workload():
+    conn = connect_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT u.user_id, u.name, u.state, u.district, u.phone,
+               COUNT(CASE WHEN a.status = 'ACTIVE' THEN 1 END) as active_victims,
+               COUNT(CASE WHEN a.status = 'REASSIGNED' THEN 1 END) as historical_assignments
+        FROM users u
+        LEFT JOIN assignments a ON u.user_id = a.counsellor_id
+        WHERE u.role = 'counsellor'
+        GROUP BY u.user_id
+        ORDER BY active_victims DESC
+    """)
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return rows
+
+def get_state_officer_dashboard():
+    conn = connect_db()
+    cur = conn.cursor()
+    # Total victims
+    cur.execute("SELECT COUNT(*) FROM users WHERE role = 'victim'")
+    total_victims = cur.fetchone()[0]
+    # Total counsellors
+    cur.execute("SELECT COUNT(*) FROM users WHERE role = 'counsellor'")
+    total_counsellors = cur.fetchone()[0]
+    # Active cases (victims with ACTIVE assignment)
+    cur.execute("SELECT COUNT(DISTINCT victim_id) FROM assignments WHERE status = 'ACTIVE'")
+    active_cases = cur.fetchone()[0]
+    # Unassigned victims
+    cur.execute("""
+        SELECT COUNT(*) FROM users WHERE role = 'victim'
+        AND user_id NOT IN (SELECT victim_id FROM assignments WHERE status = 'ACTIVE')
+    """)
+    unassigned = cur.fetchone()[0]
+    # Open alerts
+    cur.execute("SELECT COUNT(*) FROM alerts WHERE status = 'OPEN'")
+    open_alerts = cur.fetchone()[0]
+    # Average distress
+    cur.execute("SELECT AVG(distress_score) FROM entries")
+    avg_score = cur.fetchone()[0] or 0.0
+    # Recent assignments (last 10)
+    cur.execute("""
+        SELECT a.id, a.victim_id, a.counsellor_id, a.assigned_date, a.status,
+               v.name as victim_name, c.name as counsellor_name
+        FROM assignments a
+        LEFT JOIN users v ON a.victim_id = v.user_id
+        LEFT JOIN users c ON a.counsellor_id = c.user_id
+        ORDER BY a.assigned_date DESC LIMIT 10
+    """)
+    recent_assignments = [dict(r) for r in cur.fetchall()]
+    # Counsellor workload
+    cur.execute("""
+        SELECT u.user_id, u.name,
+               COUNT(CASE WHEN a.status = 'ACTIVE' THEN 1 END) as active_victims
+        FROM users u
+        LEFT JOIN assignments a ON u.user_id = a.counsellor_id
+        WHERE u.role = 'counsellor'
+        GROUP BY u.user_id ORDER BY active_victims DESC
+    """)
+    counsellor_workload = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return {
+        "total_victims": total_victims,
+        "total_counsellors": total_counsellors,
+        "active_cases": active_cases,
+        "unassigned_victims": unassigned,
+        "open_alerts": open_alerts,
+        "avg_distress": round(avg_score, 1),
+        "recent_assignments": recent_assignments,
+        "counsellor_workload": counsellor_workload
     }
 
 if __name__ == "__main__":

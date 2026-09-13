@@ -40,6 +40,18 @@
         }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #1d2b3e;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
         .nav-active {
             background-color: #1d2b3e !important;
             color: #ffffff !important;
@@ -86,6 +98,10 @@
             <button id="authTabCounsellor" onclick="switchAuthRole('counsellor')" class="flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all text-slate-600 hover:text-slate-900">
                 <span class="material-symbols-outlined text-lg">medical_services</span>
                 <span>Counsellor / Officer Portal</span>
+            </button>
+            <button id="authTabStateOfficer" onclick="switchAuthRole('state_officer')" class="flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all text-slate-600 hover:text-slate-900">
+                <span class="material-symbols-outlined text-lg">admin_panel_settings</span>
+                <span>State Officer Portal</span>
             </button>
         </div>
 
@@ -137,6 +153,12 @@
                 <button onclick="quickFillLogin('counsellor_dlsa_tn', 'counsel123', 'counsellor')" class="p-2.5 bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-300 rounded-xl text-left transition-all">
                     <div class="font-bold text-purple-800 truncate">Adv. K. Venkatesh (DLSA)</div>
                     <div class="text-[10px] text-slate-500">Legal Aid Counsel (Madurai, TN)</div>
+                </button>
+            </div>
+            <div id="stateOfficerQuickLogins" class="grid grid-cols-1 gap-2 text-xs hidden">
+                <button onclick="quickFillLogin('state_officer_01', 'state123', 'state_officer')" class="p-2.5 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded-xl text-left transition-all">
+                    <div class="font-bold text-indigo-800 truncate">Dr. Priya Nair</div>
+                    <div class="text-[10px] text-slate-500">State SC/ST Welfare Officer (Chennai, TN)</div>
                 </button>
             </div>
         </div>
@@ -245,9 +267,15 @@
         <ul id="navList" class="flex flex-col gap-1.5 flex-1 text-sm font-medium">
             <!-- Victim Links -->
             <li class="victim-only">
+                <a data-tab="my_case" onclick="showTab('my_case')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px]">folder_shared</span>
+                    <span>My Case</span>
+                </a>
+            </li>
+            <li class="victim-only">
                 <a data-tab="distress_calc" onclick="showTab('distress_calc')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
                     <span class="material-symbols-outlined text-[20px]">calculate</span>
-                    <span>Multi-Factor Distress Calc</span>
+                    <span>Distress Assessment</span>
                 </a>
             </li>
             <li class="victim-only">
@@ -271,6 +299,12 @@
 
             <!-- Counsellor Only Links -->
             <li class="counsellor-only hidden">
+                <a data-tab="my_cases" onclick="showTab('my_cases')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px]">cases</span>
+                    <span>My Cases</span>
+                </a>
+            </li>
+            <li class="counsellor-only hidden">
                 <a data-tab="clinical_command" onclick="showTab('clinical_command')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
                     <span class="material-symbols-outlined text-[20px]">crisis_alert</span>
                     <span>Red-Flag Triage & Alerts</span>
@@ -286,6 +320,32 @@
                 <a data-tab="longitudinal" onclick="showTab('longitudinal')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
                     <span class="material-symbols-outlined text-[20px]">monitoring</span>
                     <span>Longitudinal Trajectory Charts</span>
+                </a>
+            </li>
+
+            <!-- State Officer Only Links -->
+            <li class="state-officer-only hidden">
+                <a data-tab="state_dashboard" onclick="showTab('state_dashboard')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px]">dashboard</span>
+                    <span>State Dashboard</span>
+                </a>
+            </li>
+            <li class="state-officer-only hidden">
+                <a data-tab="victim_management" onclick="showTab('victim_management')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px]">groups</span>
+                    <span>Victim Management</span>
+                </a>
+            </li>
+            <li class="state-officer-only hidden">
+                <a data-tab="counsellor_management" onclick="showTab('counsellor_management')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px]">medical_services</span>
+                    <span>Counsellor Management</span>
+                </a>
+            </li>
+            <li class="state-officer-only hidden">
+                <a data-tab="assignment_management" onclick="showTab('assignment_management')" class="nav-link flex items-center gap-3 px-3.5 py-2.5 text-slate-600 rounded-xl hover:bg-slate-100 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px]">assignment_ind</span>
+                    <span>Assignments</span>
                 </a>
             </li>
 
@@ -468,6 +528,29 @@
 
             </div>
             <!-- ================= /TAB 1: MULTI-FACTOR DISTRESS CALCULATOR ================= -->
+
+            <!-- ================= TAB: MY CASE (VICTIM) ================= -->
+            <div id="tab-my_case" class="tab-content space-y-6">
+                <div class="glass-panel rounded-3xl p-6">
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+                        <div>
+                            <h3 class="text-lg font-black text-primary flex items-center gap-2">
+                                <span class="material-symbols-outlined text-blue-600">folder_shared</span>
+                                <span>My Case Summary</span>
+                            </h3>
+                            <p class="text-xs text-slate-500">Your complaint details, case status, and assigned counsellor information.</p>
+                        </div>
+                        <span id="caseStatusBadge" class="text-xs px-3 py-1 rounded-full font-bold bg-green-100 text-green-800">Active</span>
+                    </div>
+                    <div id="myCaseContent" class="space-y-4">
+                        <div class="text-center py-8 text-slate-400">
+                            <span class="material-symbols-outlined text-4xl">hourglass_empty</span>
+                            <p class="mt-2 text-sm">Loading case details...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- ================= /TAB: MY CASE (VICTIM) ================= -->
 
             <!-- ================= TAB 2: VOICE & TEXT JOURNAL ================= -->
             <div id="tab-journal" class="tab-content space-y-6">
@@ -817,6 +900,206 @@
             </div>
             <!-- ================= /TAB 7: LONGITUDINAL TRAJECTORY CHARTS ================= -->
 
+            <!-- ================= TAB: MY CASES (COUNSELLOR) ================= -->
+            <div id="tab-my_cases" class="tab-content space-y-6">
+                <div class="glass-panel rounded-3xl p-6">
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+                        <div>
+                            <h3 class="text-lg font-black text-primary flex items-center gap-2">
+                                <span class="material-symbols-outlined text-purple-600">cases</span>
+                                <span>My Assigned Cases</span>
+                            </h3>
+                            <p class="text-xs text-slate-500">Victims assigned to you. Search and filter to find specific cases.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input id="myCasesSearch" type="text" placeholder="Search by name, ID, or state..." oninput="filterMyCases()" class="text-xs border border-slate-300 rounded-xl px-3 py-2 w-48 focus:ring-2 focus:ring-primary focus:outline-none">
+                            <select id="myCasesFilter" onchange="filterMyCases()" class="text-xs border border-slate-300 rounded-xl px-3 py-2">
+                                <option value="all">All Cases</option>
+                                <option value="high">High Priority</option>
+                                <option value="active">Needs Attention</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Summary Cards -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl">
+                            <p class="text-[10px] font-bold text-blue-600 uppercase">Total Assigned</p>
+                            <p id="myCasesTotal" class="text-xl font-black text-blue-800">0</p>
+                        </div>
+                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                            <p class="text-[10px] font-bold text-amber-600 uppercase">Needs Attention</p>
+                            <p id="myCasesAttention" class="text-xl font-black text-amber-800">0</p>
+                        </div>
+                        <div class="p-3 bg-red-50 border border-red-200 rounded-xl">
+                            <p class="text-[10px] font-bold text-red-600 uppercase">High Distress</p>
+                            <p id="myCasesHigh" class="text-xl font-black text-red-800">0</p>
+                        </div>
+                        <div class="p-3 bg-green-50 border border-green-200 rounded-xl">
+                            <p class="text-[10px] font-bold text-green-600 uppercase">Stable</p>
+                            <p id="myCasesStable" class="text-xl font-black text-green-800">0</p>
+                        </div>
+                    </div>
+                    <!-- Cases Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="text-slate-400 border-b border-slate-200 font-semibold">
+                                    <th class="py-2.5 pr-3">Victim</th>
+                                    <th class="py-2.5 pr-3">Case ID</th>
+                                    <th class="py-2.5 pr-3">State</th>
+                                    <th class="py-2.5 pr-3">Distress</th>
+                                    <th class="py-2.5 pr-3">Last Entry</th>
+                                    <th class="py-2.5 pr-3">Priority</th>
+                                    <th class="py-2.5">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="myCasesTableBody" class="divide-y divide-slate-100">
+                                <tr><td colspan="7" class="py-8 text-center text-slate-400">Loading cases...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- ================= /TAB: MY CASES (COUNSELLOR) ================= -->
+
+            <!-- ================= TAB: STATE DASHBOARD ================= -->
+            <div id="tab-state_dashboard" class="tab-content space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-primary">State Officer Dashboard</h2>
+                    <p class="text-xs text-slate-500">Overview of victim cases, counsellor assignments, and alert status across your jurisdiction.</p>
+                </div>
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <div class="glass-panel rounded-2xl p-4 border-l-4 border-blue-600">
+                        <p class="text-[10px] font-bold text-blue-600 uppercase">Total Victims</p>
+                        <p id="soTotalVictims" class="text-2xl font-black text-primary">--</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-4 border-l-4 border-purple-600">
+                        <p class="text-[10px] font-bold text-purple-600 uppercase">Total Counsellors</p>
+                        <p id="soTotalCounsellors" class="text-2xl font-black text-primary">--</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-4 border-l-4 border-green-600">
+                        <p class="text-[10px] font-bold text-green-600 uppercase">Active Cases</p>
+                        <p id="soActiveCases" class="text-2xl font-black text-primary">--</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-4 border-l-4 border-amber-600">
+                        <p class="text-[10px] font-bold text-amber-600 uppercase">Unassigned</p>
+                        <p id="soUnassigned" class="text-2xl font-black text-primary">--</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-4 border-l-4 border-red-600">
+                        <p class="text-[10px] font-bold text-red-600 uppercase">Open Alerts</p>
+                        <p id="soOpenAlerts" class="text-2xl font-black text-primary">--</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-4 border-l-4 border-slate-600">
+                        <p class="text-[10px] font-bold text-slate-600 uppercase">Avg Distress</p>
+                        <p id="soAvgDistress" class="text-2xl font-black text-primary">--</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Recent Assignments -->
+                    <div class="glass-panel rounded-3xl p-6">
+                        <h3 class="text-sm font-bold text-primary mb-3">Recent Assignments</h3>
+                        <div id="soRecentAssignments" class="space-y-2 max-h-64 overflow-y-auto text-xs"></div>
+                    </div>
+                    <!-- Counsellor Workload -->
+                    <div class="glass-panel rounded-3xl p-6">
+                        <h3 class="text-sm font-bold text-primary mb-3">Counsellor Workload</h3>
+                        <div id="soCounsellorWorkload" class="space-y-2 max-h-64 overflow-y-auto text-xs"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- ================= /TAB: STATE DASHBOARD ================= -->
+
+            <!-- ================= TAB: VICTIM MANAGEMENT ================= -->
+            <div id="tab-victim_management" class="tab-content space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-primary">Victim Management</h2>
+                        <p class="text-xs text-slate-500">View and manage all registered victims and their case assignments.</p>
+                    </div>
+                    <input id="victimSearchInput" type="text" placeholder="Search by name, state, district..." oninput="filterVictimTable()" class="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-primary focus:outline-none w-64">
+                </div>
+                <div class="glass-panel rounded-3xl overflow-hidden border border-slate-200">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead class="bg-slate-100">
+                                <tr>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">Name</th>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">State</th>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">District</th>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">Case ID</th>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">Assigned Counsellor</th>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">Status</th>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="victimMgmtTbody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- ================= /TAB: VICTIM MANAGEMENT ================= -->
+
+            <!-- ================= TAB: COUNSELLOR MANAGEMENT ================= -->
+            <div id="tab-counsellor_management" class="tab-content space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-primary">Counsellor Management</h2>
+                    <p class="text-xs text-slate-500">View all counsellors, their workload, and assigned victims.</p>
+                </div>
+                <div class="glass-panel rounded-3xl overflow-hidden border border-slate-200">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead class="bg-slate-100">
+                                <tr>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">Name</th>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">State</th>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">District</th>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">Active Victims</th>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">Workload</th>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="counsellorMgmtTbody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- ================= /TAB: COUNSELLOR MANAGEMENT ================= -->
+
+            <!-- ================= TAB: ASSIGNMENT MANAGEMENT ================= -->
+            <div id="tab-assignment_management" class="tab-content space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-primary">Assignment Management</h2>
+                    <p class="text-xs text-slate-500">Assign or reassign counsellors to victims. Each victim can have at most one active assignment.</p>
+                </div>
+                <!-- Unassigned Victims -->
+                <div class="glass-panel rounded-3xl p-6">
+                    <h3 class="text-sm font-bold text-primary mb-3">Unassigned Victims</h3>
+                    <div id="unassignedVictimsList" class="space-y-2 max-h-60 overflow-y-auto text-xs"></div>
+                </div>
+                <!-- Current Assignments -->
+                <div class="glass-panel rounded-3xl overflow-hidden border border-slate-200">
+                    <div class="p-4 border-b border-slate-200">
+                        <h3 class="text-sm font-bold text-primary">Current Assignments</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead class="bg-slate-100">
+                                <tr>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">Victim</th>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">Counsellor</th>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">Assigned Date</th>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">Status</th>
+                                    <th class="py-3 px-4 text-left font-bold text-slate-600">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assignmentTbody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- ================= /TAB: ASSIGNMENT MANAGEMENT ================= -->
+
             <!-- ================= TAB 8: HELPLINES ================= -->
             <div id="tab-helplines" class="tab-content space-y-6">
                 <div>
@@ -924,32 +1207,89 @@ let longitudinalChart = null;
 let emotionChart = null;
 let calcDebounceTimer = null;
 
+// ================= UI UTILITY FUNCTIONS =================
+function showLoading(containerId, message = 'Loading...') {
+    const el = document.getElementById(containerId);
+    if (el) {
+        el.innerHTML = `
+            <div class="text-center py-12 text-slate-400">
+                <div class="loading-spinner mx-auto mb-3"></div>
+                <p class="text-sm">${message}</p>
+            </div>
+        `;
+    }
+}
+
+function showError(containerId, message = 'Something went wrong. Please try again.') {
+    const el = document.getElementById(containerId);
+    if (el) {
+        el.innerHTML = `
+            <div class="text-center py-12 text-red-400">
+                <span class="material-symbols-outlined text-4xl mb-2">error</span>
+                <p class="text-sm">${message}</p>
+            </div>
+        `;
+    }
+}
+
+// XSS-safe text escaping for innerHTML interpolation
+function esc(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+function showEmpty(containerId, message = 'No data available.', icon = 'inbox') {
+    const el = document.getElementById(containerId);
+    if (el) {
+        el.innerHTML = `
+            <div class="text-center py-12 text-slate-400">
+                <span class="material-symbols-outlined text-4xl mb-2">${icon}</span>
+                <p class="text-sm">${message}</p>
+            </div>
+        `;
+    }
+}
+
 // ---------- Authentication Functions ----------
 function switchAuthRole(role) {
     const tabVictim = document.getElementById('authTabVictim');
     const tabCounsellor = document.getElementById('authTabCounsellor');
+    const tabStateOfficer = document.getElementById('authTabStateOfficer');
     const label = document.getElementById('authIdLabel');
     const victimQuick = document.getElementById('victimQuickLogins');
     const counsellorQuick = document.getElementById('counsellorQuickLogins');
+    const stateOfficerQuick = document.getElementById('stateOfficerQuickLogins');
+    const inactiveCls = "flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all text-slate-600 hover:text-slate-900";
+    const activeCls = "flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all bg-white text-primary shadow-sm";
+
+    tabVictim.className = inactiveCls;
+    tabCounsellor.className = inactiveCls;
+    tabStateOfficer.className = inactiveCls;
+    victimQuick.classList.add('hidden');
+    counsellorQuick.classList.add('hidden');
+    stateOfficerQuick.classList.add('hidden');
 
     if (role === 'victim') {
-        tabVictim.className = "flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all bg-white text-primary shadow-sm";
-        tabCounsellor.className = "flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all text-slate-600 hover:text-slate-900";
+        tabVictim.className = activeCls;
         label.textContent = "Complainant / Beneficiary ID or NHAA Case Number";
         document.getElementById('loginUsername').placeholder = "e.g. victim_01 or NHAA-2026-8941";
         document.getElementById('loginUsername').value = "victim_01";
         document.getElementById('loginPassword').value = "pass123";
         victimQuick.classList.remove('hidden');
-        counsellorQuick.classList.add('hidden');
-    } else {
-        tabCounsellor.className = "flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all bg-white text-primary shadow-sm";
-        tabVictim.className = "flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all text-slate-600 hover:text-slate-900";
+    } else if (role === 'counsellor') {
+        tabCounsellor.className = activeCls;
         label.textContent = "Counsellor / Officer ID";
         document.getElementById('loginUsername').placeholder = "e.g. counsellor_01";
         document.getElementById('loginUsername').value = "counsellor_01";
         document.getElementById('loginPassword').value = "counsel123";
-        victimQuick.classList.add('hidden');
         counsellorQuick.classList.remove('hidden');
+    } else {
+        tabStateOfficer.className = activeCls;
+        label.textContent = "State Officer ID";
+        document.getElementById('loginUsername').placeholder = "e.g. state_officer_01";
+        document.getElementById('loginUsername').value = "state_officer_01";
+        document.getElementById('loginPassword').value = "state123";
+        stateOfficerQuick.classList.remove('hidden');
     }
 }
 
@@ -964,7 +1304,8 @@ async function handleLogin(e) {
     if (e) e.preventDefault();
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value.trim();
-    const role = document.getElementById('authTabVictim').classList.contains('bg-white') ? 'victim' : 'counsellor';
+    const role = document.getElementById('authTabVictim').classList.contains('bg-white') ? 'victim' :
+                 document.getElementById('authTabCounsellor').classList.contains('bg-white') ? 'counsellor' : 'state_officer';
 
     try {
         const res = await fetch(`${BACKEND_URL}/api/login`, {
@@ -999,31 +1340,42 @@ async function handleLogin(e) {
 }
 
 function logout() {
+    currentUser = { user_id: "", name: "", role: "", case_id: "", state: "", district: "", language: "en" };
     document.getElementById('authScreen').classList.remove('hidden');
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('nav-active'));
 }
 
 function applyUserRoleUI() {
     document.getElementById('sidebarUserName').textContent = currentUser.name;
     document.getElementById('sidebarUserSub').textContent = currentUser.case_id ? `Case: ${currentUser.case_id}` : `Jurisdiction: ${currentUser.district}`;
-    document.getElementById('navRoleBadge').textContent = currentUser.role === 'victim' ? 'VICTIM SECURE PORTAL' : 'CLINICAL & COMMAND';
-    document.getElementById('roleHeaderPill').textContent = currentUser.role === 'victim' ? 'Victim Mode Active' : 'Counsellor / Officer Mode Active';
-    document.getElementById('roleHeaderPill').className = currentUser.role === 'victim' ? 
-        'px-2.5 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-bold' : 
-        'px-2.5 py-0.5 bg-purple-100 text-purple-800 rounded-full text-xs font-bold';
-
     const victimNavs = document.querySelectorAll('.victim-only');
     const counsellorNavs = document.querySelectorAll('.counsellor-only');
+    const stateOfficerNavs = document.querySelectorAll('.state-officer-only');
+
+    victimNavs.forEach(el => el.classList.add('hidden'));
+    counsellorNavs.forEach(el => el.classList.add('hidden'));
+    stateOfficerNavs.forEach(el => el.classList.add('hidden'));
 
     if (currentUser.role === 'victim') {
+        document.getElementById('navRoleBadge').textContent = 'VICTIM SECURE PORTAL';
+        document.getElementById('roleHeaderPill').textContent = 'Victim Mode Active';
+        document.getElementById('roleHeaderPill').className = 'px-2.5 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-bold';
         victimNavs.forEach(el => el.classList.remove('hidden'));
-        counsellorNavs.forEach(el => el.classList.add('hidden'));
-        showTab('distress_calc');
+        showTab('my_case');
         if (currentUser.language) setChatLanguage(currentUser.language);
-    } else {
-        victimNavs.forEach(el => el.classList.add('hidden'));
+    } else if (currentUser.role === 'counsellor') {
+        document.getElementById('navRoleBadge').textContent = 'COUNSELLOR PORTAL';
+        document.getElementById('roleHeaderPill').textContent = 'Counsellor Mode Active';
+        document.getElementById('roleHeaderPill').className = 'px-2.5 py-0.5 bg-purple-100 text-purple-800 rounded-full text-xs font-bold';
         counsellorNavs.forEach(el => el.classList.remove('hidden'));
-        showTab('clinical_command');
-        refreshCounsellorData();
+        showTab('my_cases');
+    } else if (currentUser.role === 'state_officer') {
+        document.getElementById('navRoleBadge').textContent = 'STATE OFFICER PORTAL';
+        document.getElementById('roleHeaderPill').textContent = 'State Officer Mode Active';
+        document.getElementById('roleHeaderPill').className = 'px-2.5 py-0.5 bg-indigo-100 text-indigo-800 rounded-full text-xs font-bold';
+        stateOfficerNavs.forEach(el => el.classList.remove('hidden'));
+        showTab('state_dashboard');
     }
 }
 
@@ -1037,9 +1389,15 @@ function showTab(tabId) {
         el.classList.toggle('nav-active', el.dataset.tab === tabId);
     });
 
+    if (tabId === 'my_case') loadMyCase();
+    if (tabId === 'my_cases') loadMyCases();
     if (tabId === 'behavioural_view') loadBehaviouralData();
     if (tabId === 'longitudinal') loadLongitudinalCharts();
     if (tabId === 'clinical_command') refreshCounsellorData();
+    if (tabId === 'state_dashboard') refreshStateOfficerDashboard();
+    if (tabId === 'victim_management') loadVictimManagement();
+    if (tabId === 'counsellor_management') loadCounsellorManagement();
+    if (tabId === 'assignment_management') loadAssignmentManagement();
 }
 
 // ---------- Stealth Mode ----------
@@ -1527,6 +1885,243 @@ async function startBoxBreathing() {
     btn.textContent = "▶️ Start 1-Minute Guided Breathing";
 }
 
+// ================= MY CASE (VICTIM) =================
+async function loadMyCase() {
+    showLoading('myCaseContent', 'Loading your case details...');
+    try {
+        const res = await fetch(`${BACKEND_URL}/get_user_analytics/${currentUser.user_id}`);
+        const data = await res.json();
+        
+        if (data.error) {
+            showError('myCaseContent', data.error);
+            return;
+        }
+
+        const history = data.history || [];
+        const contact = data.contact || {};
+        const behavioural = data.behavioural || {};
+        
+        // Find latest entry
+        const latest = history.length > 0 ? history[0] : null;
+        
+        // Get complaint details from localStorage or use defaults
+        const complaint = JSON.parse(localStorage.getItem('aura_complaint_' + currentUser.user_id) || '{}');
+        
+        const lastEntryDate = latest ? new Date(latest.timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'No entries yet';
+        const avgScore = behavioural.avg_distress || (latest ? latest.distress_score : '--');
+        
+        document.getElementById('myCaseContent').innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Case Information -->
+                <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                    <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-blue-600">info</span>
+                        Case Information
+                    </h4>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between"><span class="text-slate-500">Case ID</span><span class="font-bold text-slate-800">${esc(currentUser.case_id) || 'N/A'}</span></div>
+                        <div class="flex justify-between"><span class="text-slate-500">State</span><span class="font-bold text-slate-800">${esc(currentUser.state) || 'N/A'}</span></div>
+                        <div class="flex justify-between"><span class="text-slate-500">District</span><span class="font-bold text-slate-800">${esc(currentUser.district) || 'N/A'}</span></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Status</span><span class="px-2 py-0.5 bg-green-100 text-green-800 rounded-full font-bold">Active Monitoring</span></div>
+                    </div>
+                </div>
+                
+                <!-- Assigned Counsellor -->
+                <div class="p-4 bg-purple-50 border border-purple-200 rounded-2xl space-y-3">
+                    <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-purple-600">person</span>
+                        Your Counsellor
+                    </h4>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between"><span class="text-slate-500">Name</span><span class="font-bold text-slate-800">${esc(contact.name) || 'Awaiting Assignment'}</span></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Phone</span><span class="font-bold text-slate-800">${esc(contact.phone) || '--'}</span></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Email</span><span class="font-bold text-slate-800 text-[10px]">${esc(contact.email) || '--'}</span></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Emergency</span><span class="font-bold text-slate-800">${esc(contact.district_officer) || '--'}</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress Summary -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+                <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-center">
+                    <p class="text-[10px] font-bold text-blue-600 uppercase">Total Entries</p>
+                    <p class="text-xl font-black text-blue-800">${history.length}</p>
+                </div>
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center">
+                    <p class="text-[10px] font-bold text-amber-600 uppercase">Avg Distress</p>
+                    <p class="text-xl font-black text-amber-800">${avgScore}</p>
+                </div>
+                <div class="p-3 bg-green-50 border border-green-200 rounded-xl text-center">
+                    <p class="text-[10px] font-bold text-green-600 uppercase">Last Entry</p>
+                    <p class="text-xs font-bold text-green-800">${lastEntryDate}</p>
+                </div>
+                <div class="p-3 bg-purple-50 border border-purple-200 rounded-xl text-center">
+                    <p class="text-[10px] font-bold text-purple-600 uppercase">Risk Level</p>
+                    <p class="text-xs font-black ${behavioural.risk_level === 'HIGH' ? 'text-red-800' : behavioural.risk_level === 'MEDIUM' ? 'text-amber-800' : 'text-green-800'}">${behavioural.risk_level || 'N/A'}</p>
+                </div>
+            </div>
+            
+            <!-- Recent Entries -->
+            <div class="mt-4">
+                <h4 class="text-sm font-bold text-slate-800 mb-3">Recent Journal Entries</h4>
+                ${history.length > 0 ? `
+                    <div class="space-y-2">
+                        ${history.slice(0, 5).map(h => `
+                            <div class="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">${new Date(h.timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                                    <p class="text-[10px] text-slate-500 mt-0.5">${h.text_entry ? esc(h.text_entry.substring(0, 80)) + (h.text_entry.length > 80 ? '...' : '') : 'Voice entry'}</p>
+                                </div>
+                                <span class="px-2 py-1 rounded-full text-[10px] font-bold ${h.distress_score >= 70 ? 'bg-red-100 text-red-800' : h.distress_score >= 40 ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}">
+                                    Score: ${parseInt(h.distress_score) || 0}
+                                </span>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : '<p class="text-xs text-slate-400 text-center py-4">No journal entries yet. Start by using the Distress Assessment tab.</p>'}
+            </div>
+        `;
+    } catch (err) {
+        showError('myCaseContent', 'Failed to load case details. Please try again.');
+        console.error('loadMyCase error:', err);
+    }
+}
+
+// ================= MY CASES (COUNSELLOR) =================
+let myCasesData = [];
+
+async function loadMyCases() {
+    showLoading('myCasesTableBody', 'Loading your assigned cases...');
+    try {
+        // Get all victims with their analytics
+        const victimsRes = await fetch(`${BACKEND_URL}/get_users?role=victim`);
+        const victimsData = await victimsRes.json();
+        
+        // Get all assignments
+        const assignmentsRes = await fetch(`${BACKEND_URL}/api/state_officer/assignments`);
+        const assignmentsData = await assignmentsRes.json();
+        
+        // Filter assignments for this counsellor
+        const myAssignments = (assignmentsData || []).filter(a => 
+            a.counsellor_id === currentUser.user_id && a.status === 'ACTIVE'
+        );
+        
+        // Build cases data
+        myCasesData = [];
+        for (let assignment of myAssignments) {
+            const victim = (victimsData.users || []).find(v => v.user_id === assignment.victim_id);
+            if (victim) {
+                // Get victim analytics
+                try {
+                    const analyticsRes = await fetch(`${BACKEND_URL}/get_user_analytics/${victim.user_id}`);
+                    const analyticsData = await analyticsRes.json();
+                    const history = analyticsData.history || [];
+                    const behavioural = analyticsData.behavioural || {};
+                    
+                    myCasesData.push({
+                        ...victim,
+                        latestEntry: history.length > 0 ? history[0] : null,
+                        totalEntries: history.length,
+                        avgDistress: behavioural.avg_distress || 0,
+                        riskLevel: behavioural.risk_level || 'N/A'
+                    });
+                } catch (e) {
+                    myCasesData.push({
+                        ...victim,
+                        latestEntry: null,
+                        totalEntries: 0,
+                        avgDistress: 0,
+                        riskLevel: 'N/A'
+                    });
+                }
+            }
+        }
+        
+        updateMyCasesUI();
+    } catch (err) {
+        showError('myCasesTableBody', 'Failed to load cases. Please try again.');
+        console.error('loadMyCases error:', err);
+    }
+}
+
+function updateMyCasesUI() {
+    const tbody = document.getElementById('myCasesTableBody');
+    const filtered = getFilteredMyCases();
+    
+    // Update summary cards
+    document.getElementById('myCasesTotal').textContent = myCasesData.length;
+    document.getElementById('myCasesAttention').textContent = myCasesData.filter(c => c.avgDistress >= 50 && c.avgDistress < 70).length;
+    document.getElementById('myCasesHigh').textContent = myCasesData.filter(c => c.avgDistress >= 70).length;
+    document.getElementById('myCasesStable').textContent = myCasesData.filter(c => c.avgDistress < 50).length;
+    
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-slate-400">No cases found matching your criteria.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = filtered.map(c => {
+        const score = c.latestEntry ? c.latestEntry.distress_score : c.avgDistress;
+        const priority = score >= 70 ? 'high' : score >= 50 ? 'medium' : 'low';
+        const priorityColor = priority === 'high' ? 'bg-red-100 text-red-800' : priority === 'medium' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800';
+        const lastEntry = c.latestEntry ? new Date(c.latestEntry.timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'No entries';
+        
+        return `
+            <tr class="hover:bg-slate-50 transition-colors">
+                <td class="py-3 pr-3">
+                    <p class="font-bold text-slate-800">${esc(c.name)}</p>
+                    <p class="text-[10px] text-slate-500">${esc(c.user_id)}</p>
+                </td>
+                <td class="py-3 pr-3 text-slate-600">${esc(c.case_id || 'N/A')}</td>
+                <td class="py-3 pr-3 text-slate-600">${esc(c.state)}</td>
+                <td class="py-3 pr-3">
+                    <span class="font-bold ${score >= 70 ? 'text-red-700' : score >= 50 ? 'text-amber-700' : 'text-green-700'}">${score}</span>
+                </td>
+                <td class="py-3 pr-3 text-slate-600">${lastEntry}</td>
+                <td class="py-3 pr-3">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${priorityColor}">${priority.toUpperCase()}</span>
+                </td>
+                <td class="py-3">
+                    <button onclick="viewCaseDetails('${esc(c.user_id)}')" class="px-3 py-1.5 bg-primary hover:bg-primary-hover text-white rounded-lg text-[11px] font-bold transition-all">
+                        View
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function getFilteredMyCases() {
+    const search = (document.getElementById('myCasesSearch')?.value || '').toLowerCase();
+    const filter = document.getElementById('myCasesFilter')?.value || 'all';
+    
+    return myCasesData.filter(c => {
+        // Search filter
+        const matchesSearch = !search || 
+            c.name.toLowerCase().includes(search) ||
+            (c.user_id || '').toLowerCase().includes(search) ||
+            (c.case_id || '').toLowerCase().includes(search) ||
+            (c.state || '').toLowerCase().includes(search);
+        
+        // Priority filter
+        const score = c.latestEntry ? c.latestEntry.distress_score : c.avgDistress;
+        let matchesFilter = true;
+        if (filter === 'high') matchesFilter = score >= 70;
+        else if (filter === 'active') matchesFilter = score >= 50;
+        
+        return matchesSearch && matchesFilter;
+    });
+}
+
+function filterMyCases() {
+    updateMyCasesUI();
+}
+
+function viewCaseDetails(userId) {
+    // Switch to behaviour view and load that user's data
+    currentUser.viewingUserId = userId;
+    showTab('behavioural_view');
+}
+
 // ================= COUNSELLOR / CLINICAL DASHBOARD =================
 async function refreshCounsellorData() {
     try {
@@ -1544,13 +2139,13 @@ async function refreshCounsellorData() {
                 <div class="p-3.5 bg-red-50 border border-red-200 rounded-2xl flex flex-wrap items-center justify-between gap-2">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="px-2 py-0.5 rounded-full font-black text-[10px] bg-red-600 text-white">[${a.risk_level}]</span>
-                            <span class="font-bold text-slate-800">Case #${a.case_id} (${a.district}, ${a.state})</span>
+                            <span class="px-2 py-0.5 rounded-full font-black text-[10px] bg-red-600 text-white">[${esc(a.risk_level)}]</span>
+                            <span class="font-bold text-slate-800">Case #${esc(a.case_id)} (${esc(a.district)}, ${esc(a.state)})</span>
                         </div>
-                        <p class="text-slate-600 mt-1">Reason: ${a.trigger_reason}</p>
-                        <p class="text-blue-900 font-semibold mt-0.5">Action: ${a.recommended_action}</p>
+                        <p class="text-slate-600 mt-1">Reason: ${esc(a.trigger_reason)}</p>
+                        <p class="text-blue-900 font-semibold mt-0.5">Action: ${esc(a.recommended_action)}</p>
                     </div>
-                    <button onclick="resolveAlertTicket(${a.id})" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white rounded-xl text-[11px] font-bold shadow-sm">
+                    <button onclick="resolveAlertTicket(${parseInt(a.id) || 0})" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white rounded-xl text-[11px] font-bold shadow-sm">
                         1-Click DLSA Intervention
                     </button>
                 </div>
@@ -1563,11 +2158,11 @@ async function refreshCounsellorData() {
         const tbody = document.getElementById('districtTbody');
         tbody.innerHTML = (data.district_summary || []).map(d => `
             <tr>
-                <td class="py-2.5 pr-3 font-bold text-slate-800">${d.district}</td>
-                <td class="py-2.5 pr-3 text-slate-600">${d.state}</td>
-                <td class="py-2.5 pr-3">${d.victim_count}</td>
-                <td class="py-2.5 pr-3 font-bold ${d.avg_distress >= 65 ? 'text-red-600' : 'text-slate-700'}">${Math.round(d.avg_distress)}/100</td>
-                <td class="py-2.5 pr-3 font-bold ${d.high_risk_count > 0 ? 'text-red-600' : 'text-green-600'}">${d.high_risk_count}</td>
+                <td class="py-2.5 pr-3 font-bold text-slate-800">${esc(d.district)}</td>
+                <td class="py-2.5 pr-3 text-slate-600">${esc(d.state)}</td>
+                <td class="py-2.5 pr-3">${parseInt(d.victim_count) || 0}</td>
+                <td class="py-2.5 pr-3 font-bold ${d.avg_distress >= 65 ? 'text-red-600' : 'text-slate-700'}">${Math.round(d.avg_distress || 0)}/100</td>
+                <td class="py-2.5 pr-3 font-bold ${d.high_risk_count > 0 ? 'text-red-600' : 'text-green-600'}">${parseInt(d.high_risk_count) || 0}</td>
                 <td class="py-2.5"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] font-semibold">Active Watch</span></td>
             </tr>
         `).join('');
@@ -1706,6 +2301,238 @@ document.addEventListener('DOMContentLoaded', () => {
     setChatLanguage('en');
     updateDistressCalc();
 });
+
+// ================= STATE OFFICER FUNCTIONS =================
+async function refreshStateOfficerDashboard() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/state_officer/dashboard`);
+        const data = await res.json();
+        document.getElementById('soTotalVictims').textContent = parseInt(data.total_victims) || 0;
+        document.getElementById('soTotalCounsellors').textContent = parseInt(data.total_counsellors) || 0;
+        document.getElementById('soActiveCases').textContent = parseInt(data.active_cases) || 0;
+        document.getElementById('soUnassigned').textContent = parseInt(data.unassigned_victims) || 0;
+        document.getElementById('soOpenAlerts').textContent = parseInt(data.open_alerts) || 0;
+        document.getElementById('soAvgDistress').textContent = (Math.round(data.avg_distress || 0)) + ' / 100';
+        // Recent Assignments
+        const raEl = document.getElementById('soRecentAssignments');
+        if (data.recent_assignments && data.recent_assignments.length) {
+            raEl.innerHTML = data.recent_assignments.map(a => `
+                <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                    <span class="font-bold">${esc(a.victim_name || a.victim_id)}</span> → <span class="font-bold text-purple-700">${esc(a.counsellor_name || a.counsellor_id)}</span>
+                    <span class="text-[10px] text-slate-400 ml-2">${esc(a.assigned_date || '')}</span>
+                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ml-2 ${a.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-600'}">${esc(a.status)}</span>
+                </div>
+            `).join('');
+        } else {
+            raEl.innerHTML = '<p class="text-slate-400">No assignments yet.</p>';
+        }
+        // Counsellor Workload
+        const cwEl = document.getElementById('soCounsellorWorkload');
+        if (data.counsellor_workload && data.counsellor_workload.length) {
+            cwEl.innerHTML = data.counsellor_workload.map(c => `
+                <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                    <span class="font-bold">${esc(c.name)}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700">${parseInt(c.active_victims) || 0} active</span>
+                </div>
+            `).join('');
+        } else {
+            cwEl.innerHTML = '<p class="text-slate-400">No counsellors found.</p>';
+        }
+    } catch (e) {
+        console.error("State dashboard load error:", e);
+    }
+}
+
+let allVictimsData = [];
+async function loadVictimManagement() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/state_officer/victims`);
+        const data = await res.json();
+        allVictimsData = data.all_victims || [];
+        renderVictimTable(allVictimsData);
+    } catch (e) {
+        console.error("Victim management load error:", e);
+    }
+}
+function renderVictimTable(victims) {
+    const tbody = document.getElementById('victimMgmtTbody');
+    tbody.innerHTML = victims.map(v => `
+        <tr class="hover:bg-slate-50">
+            <td class="py-2.5 px-4 font-bold">${esc(v.name || v.user_id)}</td>
+            <td class="py-2.5 px-4">${esc(v.state || '')}</td>
+            <td class="py-2.5 px-4">${esc(v.district || '')}</td>
+            <td class="py-2.5 px-4">${esc(v.case_id || '')}</td>
+            <td class="py-2.5 px-4">${v.assigned ? '<span class="font-bold text-purple-700">' + esc(v.assigned_to) + '</span>' : '<span class="text-amber-600 font-bold">Unassigned</span>'}</td>
+            <td class="py-2.5 px-4">${v.assigned ? '<span class="px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold">Assigned</span>' : '<span class="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold">Unassigned</span>'}</td>
+            <td class="py-2.5 px-4">
+                ${v.assigned
+                    ? `<button onclick="openReassignModal('${esc(v.user_id)}', '${esc(v.assigned_to_id)}', '${esc(v.name)}')" class="px-2 py-1 bg-indigo-600 text-white rounded-lg text-[10px] font-bold hover:bg-indigo-700">Reassign</button>`
+                    : `<button onclick="openAssignModal('${esc(v.user_id)}', '${esc(v.name)}')" class="px-2 py-1 bg-green-600 text-white rounded-lg text-[10px] font-bold hover:bg-green-700">Assign</button>`
+                }
+            </td>
+        </tr>
+    `).join('');
+}
+function filterVictimTable() {
+    const q = document.getElementById('victimSearchInput').value.toLowerCase();
+    const filtered = allVictimsData.filter(v => (v.name||'').toLowerCase().includes(q) || (v.state||'').toLowerCase().includes(q) || (v.district||'').toLowerCase().includes(q) || (v.case_id||'').toLowerCase().includes(q));
+    renderVictimTable(filtered);
+}
+
+let allCounsellorsData = [];
+async function loadCounsellorManagement() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/state_officer/counsellors`);
+        allCounsellorsData = await res.json();
+        const tbody = document.getElementById('counsellorMgmtTbody');
+        tbody.innerHTML = allCounsellorsData.map(c => `
+            <tr class="hover:bg-slate-50">
+                <td class="py-2.5 px-4 font-bold">${esc(c.name)}</td>
+                <td class="py-2.5 px-4">${esc(c.state || '')}</td>
+                <td class="py-2.5 px-4">${esc(c.district || '')}</td>
+                <td class="py-2.5 px-4 font-bold">${c.active_victims}</td>
+                <td class="py-2.5 px-4">
+                    <div class="w-full bg-slate-200 rounded-full h-2">
+                        <div class="bg-purple-600 h-2 rounded-full" style="width: ${Math.min(c.active_victims * 25, 100)}%"></div>
+                    </div>
+                </td>
+                <td class="py-2.5 px-4 text-[10px]">${c.historical_assignments} total</td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        console.error("Counsellor management load error:", e);
+    }
+}
+
+async function loadAssignmentManagement() {
+    try {
+        const [assignRes, unassignedRes, counsellorsRes] = await Promise.all([
+            fetch(`${BACKEND_URL}/api/state_officer/assignments`),
+            fetch(`${BACKEND_URL}/api/state_officer/victims`),
+            fetch(`${BACKEND_URL}/api/state_officer/counsellors`)
+        ]);
+        const assignments = await assignRes.json();
+        const victimData = await unassignedRes.json();
+        allCounsellorsData = await counsellorsRes.json();
+        // Unassigned
+        const unassigned = victimData.unassigned || [];
+        const uaEl = document.getElementById('unassignedVictimsList');
+        if (unassigned.length) {
+            uaEl.innerHTML = unassigned.map(v => `
+                <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between">
+                    <div>
+                        <span class="font-bold">${esc(v.name)}</span>
+                        <span class="text-[10px] text-slate-500 ml-2">${esc(v.state)}, ${esc(v.district)}</span>
+                    </div>
+                    <button onclick="openAssignModal('${esc(v.user_id)}', '${esc(v.name)}')" class="px-2.5 py-1 bg-green-600 text-white rounded-lg text-[10px] font-bold hover:bg-green-700">Assign</button>
+                </div>
+            `).join('');
+        } else {
+            uaEl.innerHTML = '<p class="text-green-700 font-bold">All victims are assigned.</p>';
+        }
+        // Assignments table
+        const tbody = document.getElementById('assignmentTbody');
+        if (assignments.length) {
+            tbody.innerHTML = assignments.map(a => `
+                <tr class="hover:bg-slate-50">
+                    <td class="py-2.5 px-4 font-bold">${esc(a.victim_name || a.victim_id)}</td>
+                    <td class="py-2.5 px-4 font-bold text-purple-700">${esc(a.counsellor_name || a.counsellor_id)}</td>
+                    <td class="py-2.5 px-4">${esc(a.assigned_date || '')}</td>
+                    <td class="py-2.5 px-4">
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${a.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-600'}">${esc(a.status)}</span>
+                    </td>
+                    <td class="py-2.5 px-4">
+                        ${a.status === 'ACTIVE' ? `<button onclick="openReassignModal('${esc(a.victim_id)}', '${esc(a.counsellor_id)}', '${esc(a.victim_name)}')" class="px-2 py-1 bg-indigo-600 text-white rounded-lg text-[10px] font-bold hover:bg-indigo-700">Reassign</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-400">No assignments found.</td></tr>';
+        }
+    } catch (e) {
+        console.error("Assignment management load error:", e);
+    }
+}
+
+
+function openAssignModal(victimId, victimName) {
+    if (!allCounsellorsData.length) { showToast("Counsellor data not loaded yet."); return; }
+    const counsellorOptions = allCounsellorsData.map(c => `<option value="${esc(c.user_id)}">${esc(c.name)} (${parseInt(c.active_victims) || 0} active)</option>`).join('');
+    const html = `
+        <div id="assignModal" class="fixed inset-0 z-[160] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="glass-panel rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-200">
+                <h3 class="text-lg font-bold text-primary mb-1">Assign Counsellor</h3>
+                <p class="text-xs text-slate-500 mb-4">Assign a counsellor to <strong>${esc(victimName)}</strong> (${esc(victimId)})</p>
+                <select id="assignCounsellorSelect" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-medium mb-4">${counsellorOptions}</select>
+                <input id="assignNotes" type="text" placeholder="Notes (optional)" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs mb-4">
+                <div class="flex gap-2">
+                    <button onclick="submitAssign('${victimId}')" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl text-xs font-bold">Assign</button>
+                    <button onclick="closeModal('assignModal')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-2.5 rounded-xl text-xs font-bold">Cancel</button>
+                </div>
+            </div>
+        </div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function openReassignModal(victimId, currentCounsellorId, victimName) {
+    if (!allCounsellorsData.length) { showToast("Counsellor data not loaded yet."); return; }
+    const counsellorOptions = allCounsellorsData.filter(c => c.user_id !== currentCounsellorId).map(c => `<option value="${esc(c.user_id)}">${esc(c.name)} (${parseInt(c.active_victims) || 0} active)</option>`).join('');
+    const html = `
+        <div id="reassignModal" class="fixed inset-0 z-[160] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="glass-panel rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-200">
+                <h3 class="text-lg font-bold text-primary mb-1">Reassign Counsellor</h3>
+                <p class="text-xs text-slate-500 mb-4">Reassign counsellor for <strong>${esc(victimName)}</strong> (${esc(victimId)})</p>
+                <select id="reassignCounsellorSelect" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-medium mb-4">${counsellorOptions}</select>
+                <input id="reassignNotes" type="text" placeholder="Notes (optional)" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs mb-4">
+                <div class="flex gap-2">
+                    <button onclick="submitReassign('${esc(victimId)}')" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-xs font-bold">Reassign</button>
+                    <button onclick="closeModal('reassignModal')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-2.5 rounded-xl text-xs font-bold">Cancel</button>
+                </div>
+            </div>
+        </div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+async function submitAssign(victimId) {
+    const counsellorId = document.getElementById('assignCounsellorSelect').value;
+    const notes = document.getElementById('assignNotes').value;
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/state_officer/assign`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ victim_id: victimId, counsellor_id: counsellorId, notes })
+        });
+        const data = await res.json();
+        if (data.error) { showToast("Error: " + data.error); return; }
+        closeModal('assignModal');
+        showToast("Counsellor assigned successfully.");
+        loadVictimManagement();
+        loadCounsellorManagement();
+        loadAssignmentManagement();
+    } catch (e) { showToast("Network error."); }
+}
+
+async function submitReassign(victimId) {
+    const counsellorId = document.getElementById('reassignCounsellorSelect').value;
+    const notes = document.getElementById('reassignNotes').value;
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/state_officer/assign`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ victim_id: victimId, counsellor_id: counsellorId, notes })
+        });
+        const data = await res.json();
+        if (data.error) { showToast("Error: " + data.error); return; }
+        closeModal('reassignModal');
+        showToast("Counsellor reassigned successfully.");
+        loadVictimManagement();
+        loadCounsellorManagement();
+        loadAssignmentManagement();
+    } catch (e) { showToast("Network error."); }
+}
+
+function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+}
 </script>
 
 </body>
