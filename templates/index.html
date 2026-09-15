@@ -128,6 +128,12 @@
             </button>
         </form>
 
+        <!-- Create Account Link (Victim only) -->
+        <div id="victimSignupLink" class="mt-4 text-center">
+            <p class="text-xs text-slate-500">New to AURA?</p>
+            <button onclick="openVictimSignup()" class="mt-1 text-xs font-bold text-primary hover:underline">Create Account / Sign Up</button>
+        </div>
+
         <!-- Demo Quick Login Chips -->
         <div class="mt-6 pt-5 border-t border-slate-200">
             <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center mb-3">Quick Demo Authentication Profiles</p>
@@ -236,6 +242,190 @@
 
             <button type="submit" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-md hover:bg-primary-hover transition-all">
                 Generate NHAA Ticket & Activate Dynamic Monitoring
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ================= VICTIM SIGNUP MODAL ================= -->
+<div id="victimSignupModal" class="hidden fixed inset-0 z-[130] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-lg rounded-3xl p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+            <h3 class="text-base font-bold text-primary flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-600">person_add</span>
+                <span>Create Victim Account</span>
+            </h3>
+            <button onclick="closeVictimSignup()" class="text-slate-400 hover:text-slate-700">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form id="victimSignupForm" onsubmit="handleVictimSignup(event)" class="space-y-3.5 text-xs font-semibold text-slate-700">
+            <div>
+                <label class="block mb-1">Full Name *</label>
+                <input id="signupName" type="text" placeholder="e.g. Ravi Kumar" required class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+            </div>
+            <div>
+                <label class="block mb-1">Username *</label>
+                <div class="relative">
+                    <input id="signupUsername" type="text" placeholder="e.g. ravi_kumar" required oninput="checkSignupUsername()" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 pr-16">
+                    <span id="signupUsernameStatus" class="absolute right-3 top-2 text-[10px] font-bold"></span>
+                </div>
+                <p id="signupUsernameHint" class="text-[10px] text-slate-400 mt-0.5">This will be your login ID</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block mb-1">Password *</label>
+                    <input id="signupPassword" type="password" placeholder="Min 6 characters" required minlength="6" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+                </div>
+                <div>
+                    <label class="block mb-1">Confirm Password *</label>
+                    <input id="signupConfirmPassword" type="password" placeholder="Re-enter password" required minlength="6" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block mb-1">State *</label>
+                    <select id="signupState" required class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-medium">
+                        <option value="">Select State</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-1">District *</label>
+                    <input id="signupDistrict" type="text" placeholder="e.g. Jaipur" required class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block mb-1">Age</label>
+                    <input id="signupAge" type="number" min="1" max="120" placeholder="e.g. 32" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+                </div>
+                <div>
+                    <label class="block mb-1">Gender</label>
+                    <select id="signupGender" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-medium">
+                        <option value="">Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block mb-1">Phone Number</label>
+                    <input id="signupPhone" type="tel" placeholder="+91 9800000000" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+                </div>
+                <div>
+                    <label class="block mb-1">Preferred Language</label>
+                    <select id="signupLanguage" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-medium">
+                        <option value="en">English</option>
+                        <option value="ta">தமிழ் (Tamil)</option>
+                        <option value="hi">हिंदी (Hindi)</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block mb-1">Email (Optional)</label>
+                <input id="signupEmail" type="email" placeholder="e.g. ravi@email.com" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+            </div>
+
+            <div id="signupError" class="hidden text-red-600 text-xs font-bold bg-red-50 p-2 rounded-xl"></div>
+            <div id="signupSuccess" class="hidden text-green-600 text-xs font-bold bg-green-50 p-2 rounded-xl"></div>
+
+            <button type="submit" id="signupSubmitBtn" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-md hover:bg-primary-hover transition-all">
+                Create Account
+            </button>
+            <p class="text-center text-[10px] text-slate-400">Already have an account? <button type="button" onclick="closeVictimSignup()" class="text-primary font-bold hover:underline">Sign In</button></p>
+        </form>
+    </div>
+</div>
+
+<!-- ================= COUNSELLOR CREATION MODAL (State Officer) ================= -->
+<div id="counsellorCreateModal" class="hidden fixed inset-0 z-[130] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-lg rounded-3xl p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+            <h3 class="text-base font-bold text-primary flex items-center gap-2">
+                <span class="material-symbols-outlined text-purple-600">person_add</span>
+                <span>Add New Counsellor</span>
+            </h3>
+            <button onclick="closeCounsellorCreate()" class="text-slate-400 hover:text-slate-700">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form id="counsellorCreateForm" onsubmit="handleCounsellorCreate(event)" class="space-y-3.5 text-xs font-semibold text-slate-700">
+            <div>
+                <label class="block mb-1">Full Name *</label>
+                <input id="counsellorName" type="text" placeholder="e.g. Dr. Priya Verma" required class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+            </div>
+            <div>
+                <label class="block mb-1">Username *</label>
+                <div class="relative">
+                    <input id="counsellorUsername" type="text" placeholder="e.g. counsellor_priya" required oninput="checkCounsellorUsername()" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 pr-16">
+                    <span id="counsellorUsernameStatus" class="absolute right-3 top-2 text-[10px] font-bold"></span>
+                </div>
+                <p id="counsellorUsernameHint" class="text-[10px] text-slate-400 mt-0.5">This will be the counsellor's login ID</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block mb-1">Password *</label>
+                    <input id="counsellorPassword" type="password" placeholder="Min 6 characters" required minlength="6" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+                </div>
+                <div>
+                    <label class="block mb-1">Confirm Password *</label>
+                    <input id="counsellorConfirmPassword" type="password" placeholder="Re-enter password" required minlength="6" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block mb-1">State *</label>
+                    <select id="counsellorState" required class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-medium">
+                        <option value="">Select State</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-1">District *</label>
+                    <input id="counsellorDistrict" type="text" placeholder="e.g. Chennai" required class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block mb-1">Phone Number</label>
+                    <input id="counsellorPhone" type="tel" placeholder="+91 9800000000" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+                </div>
+                <div>
+                    <label class="block mb-1">Email</label>
+                    <input id="counsellorEmail" type="email" placeholder="e.g. priya@hospital.gov.in" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+                </div>
+            </div>
+            <div>
+                <label class="block mb-1">Qualification</label>
+                <input id="counsellorQualification" type="text" placeholder="e.g. MD Psychiatry, MA Clinical Psychology" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+            </div>
+            <div>
+                <label class="block mb-1">Specialization</label>
+                <input id="counsellorSpecialization" type="text" placeholder="e.g. Trauma & PTSD, Legal Counselling" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block mb-1">Experience</label>
+                    <input id="counsellorExperience" type="text" placeholder="e.g. 5 years" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800">
+                </div>
+                <div>
+                    <label class="block mb-1">Account Status</label>
+                    <select id="counsellorStatus" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-medium">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="counsellorCreateError" class="hidden text-red-600 text-xs font-bold bg-red-50 p-2 rounded-xl"></div>
+            <div id="counsellorCreateSuccess" class="hidden text-green-600 text-xs font-bold bg-green-50 p-2 rounded-xl"></div>
+
+            <button type="submit" id="counsellorCreateSubmitBtn" class="w-full bg-purple-700 text-white py-3 rounded-xl font-bold shadow-md hover:bg-purple-800 transition-all">
+                Create Counsellor Account
             </button>
         </form>
     </div>
@@ -1042,9 +1232,15 @@
 
             <!-- ================= TAB: COUNSELLOR MANAGEMENT ================= -->
             <div id="tab-counsellor_management" class="tab-content space-y-6">
-                <div>
-                    <h2 class="text-xl font-bold text-primary">Counsellor Management</h2>
-                    <p class="text-xs text-slate-500">View all counsellors, their workload, and assigned victims.</p>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-primary">Counsellor Management</h2>
+                        <p class="text-xs text-slate-500">View all counsellors, their workload, and assigned victims.</p>
+                    </div>
+                    <button onclick="openCounsellorCreate()" class="flex items-center gap-1.5 px-4 py-2 bg-purple-700 text-white rounded-xl text-xs font-bold shadow-md hover:bg-purple-800 transition-all">
+                        <span class="material-symbols-outlined text-sm">person_add</span>
+                        Add Counsellor
+                    </button>
                 </div>
                 <div class="glass-panel rounded-3xl overflow-hidden border border-slate-200">
                     <div class="overflow-x-auto">
@@ -1259,6 +1455,7 @@ function switchAuthRole(role) {
     const victimQuick = document.getElementById('victimQuickLogins');
     const counsellorQuick = document.getElementById('counsellorQuickLogins');
     const stateOfficerQuick = document.getElementById('stateOfficerQuickLogins');
+    const victimSignupLink = document.getElementById('victimSignupLink');
     const inactiveCls = "flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all text-slate-600 hover:text-slate-900";
     const activeCls = "flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all bg-white text-primary shadow-sm";
 
@@ -1268,6 +1465,7 @@ function switchAuthRole(role) {
     victimQuick.classList.add('hidden');
     counsellorQuick.classList.add('hidden');
     stateOfficerQuick.classList.add('hidden');
+    if (victimSignupLink) victimSignupLink.classList.add('hidden');
 
     if (role === 'victim') {
         tabVictim.className = activeCls;
@@ -1276,6 +1474,7 @@ function switchAuthRole(role) {
         document.getElementById('loginUsername').value = "victim_01";
         document.getElementById('loginPassword').value = "pass123";
         victimQuick.classList.remove('hidden');
+        if (victimSignupLink) victimSignupLink.classList.remove('hidden');
     } else if (role === 'counsellor') {
         tabCounsellor.className = activeCls;
         label.textContent = "Counsellor / Officer ID";
@@ -1339,6 +1538,269 @@ async function handleLogin(e) {
     }
 }
 
+// ================= VICTIM SIGNUP FUNCTIONS =================
+let signupUsernameCheckTimeout = null;
+
+function openVictimSignup() {
+    document.getElementById('victimSignupModal').classList.remove('hidden');
+    loadSignupStates();
+    document.getElementById('signupError').classList.add('hidden');
+    document.getElementById('signupSuccess').classList.add('hidden');
+    document.getElementById('signupForm').reset();
+}
+
+function closeVictimSignup() {
+    document.getElementById('victimSignupModal').classList.add('hidden');
+}
+
+async function loadSignupStates() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/get_states_and_nhaa_cases`);
+        const data = await res.json();
+        const sel = document.getElementById('signupState');
+        const states = data.states || data;
+        if (Array.isArray(states)) {
+            states.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = s;
+                sel.appendChild(opt);
+            });
+        }
+    } catch (e) {
+        console.error("Failed to load states for signup:", e);
+    }
+}
+
+function checkSignupUsername() {
+    clearTimeout(signupUsernameCheckTimeout);
+    const username = document.getElementById('signupUsername').value.trim();
+    const statusEl = document.getElementById('signupUsernameStatus');
+    if (!username || username.length < 3) {
+        statusEl.textContent = '';
+        return;
+    }
+    signupUsernameCheckTimeout = setTimeout(async () => {
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/check_username?username=${encodeURIComponent(username)}`);
+            const data = await res.json();
+            if (data.available) {
+                statusEl.textContent = '✓ Available';
+                statusEl.className = 'absolute right-3 top-2 text-[10px] font-bold text-green-600';
+            } else {
+                statusEl.textContent = '✗ Taken';
+                statusEl.className = 'absolute right-3 top-2 text-[10px] font-bold text-red-600';
+            }
+        } catch (e) {
+            statusEl.textContent = '';
+        }
+    }, 400);
+}
+
+async function handleVictimSignup(e) {
+    e.preventDefault();
+    const errEl = document.getElementById('signupError');
+    const successEl = document.getElementById('signupSuccess');
+    errEl.classList.add('hidden');
+    successEl.classList.add('hidden');
+
+    const name = document.getElementById('signupName').value.trim();
+    const username = document.getElementById('signupUsername').value.trim();
+    const password = document.getElementById('signupPassword').value.trim();
+    const confirmPassword = document.getElementById('signupConfirmPassword').value.trim();
+    const state = document.getElementById('signupState').value;
+    const district = document.getElementById('signupDistrict').value.trim();
+    const age = document.getElementById('signupAge').value;
+    const gender = document.getElementById('signupGender').value;
+    const phone = document.getElementById('signupPhone').value.trim();
+    const language = document.getElementById('signupLanguage').value;
+    const email = document.getElementById('signupEmail').value.trim();
+
+    if (!name || !username || !password || !state || !district) {
+        errEl.textContent = 'Please fill all required fields (Name, Username, Password, State, District).';
+        errEl.classList.remove('hidden');
+        return;
+    }
+    if (password !== confirmPassword) {
+        errEl.textContent = 'Passwords do not match. Please re-enter.';
+        errEl.classList.remove('hidden');
+        return;
+    }
+    if (password.length < 6) {
+        errEl.textContent = 'Password must be at least 6 characters.';
+        errEl.classList.remove('hidden');
+        return;
+    }
+
+    const payload = { name, username, password, state, district, language };
+    if (age) payload.age = parseInt(age);
+    if (gender) payload.gender = gender;
+    if (phone) payload.phone = phone;
+    if (email) payload.email = email;
+
+    const btn = document.getElementById('signupSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Creating Account...';
+
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/signup/victim`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok && data.status === 'success') {
+            successEl.innerHTML = `Account created successfully! You can now <strong>sign in</strong> with your username: <strong>${esc(data.user_id)}</strong> and your password.`;
+            successEl.classList.remove('hidden');
+            document.getElementById('victimSignupForm').reset();
+            document.getElementById('signupUsernameStatus').textContent = '';
+        } else {
+            errEl.textContent = data.error || 'Failed to create account.';
+            errEl.classList.remove('hidden');
+        }
+    } catch (err) {
+        errEl.textContent = 'Network error. Please try again.';
+        errEl.classList.remove('hidden');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
+    }
+}
+
+// ================= COUNSELLOR CREATION FUNCTIONS =================
+let counsellorUsernameCheckTimeout = null;
+
+function openCounsellorCreate() {
+    document.getElementById('counsellorCreateModal').classList.remove('hidden');
+    loadCounsellorCreateStates();
+    document.getElementById('counsellorCreateError').classList.add('hidden');
+    document.getElementById('counsellorCreateSuccess').classList.add('hidden');
+    document.getElementById('counsellorCreateForm').reset();
+}
+
+function closeCounsellorCreate() {
+    document.getElementById('counsellorCreateModal').classList.add('hidden');
+}
+
+async function loadCounsellorCreateStates() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/get_states_and_nhaa_cases`);
+        const data = await res.json();
+        const sel = document.getElementById('counsellorState');
+        const existingOpts = sel.querySelectorAll('option:not(:first-child)');
+        existingOpts.forEach(o => o.remove());
+        const states = data.states || data;
+        if (Array.isArray(states)) {
+            states.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = s;
+                sel.appendChild(opt);
+            });
+        }
+    } catch (e) {
+        console.error("Failed to load states for counsellor creation:", e);
+    }
+}
+
+function checkCounsellorUsername() {
+    clearTimeout(counsellorUsernameCheckTimeout);
+    const username = document.getElementById('counsellorUsername').value.trim();
+    const statusEl = document.getElementById('counsellorUsernameStatus');
+    if (!username || username.length < 3) {
+        statusEl.textContent = '';
+        return;
+    }
+    counsellorUsernameCheckTimeout = setTimeout(async () => {
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/check_username?username=${encodeURIComponent(username)}`);
+            const data = await res.json();
+            if (data.available) {
+                statusEl.textContent = '✓ Available';
+                statusEl.className = 'absolute right-3 top-2 text-[10px] font-bold text-green-600';
+            } else {
+                statusEl.textContent = '✗ Taken';
+                statusEl.className = 'absolute right-3 top-2 text-[10px] font-bold text-red-600';
+            }
+        } catch (e) {
+            statusEl.textContent = '';
+        }
+    }, 400);
+}
+
+async function handleCounsellorCreate(e) {
+    e.preventDefault();
+    const errEl = document.getElementById('counsellorCreateError');
+    const successEl = document.getElementById('counsellorCreateSuccess');
+    errEl.classList.add('hidden');
+    successEl.classList.add('hidden');
+
+    const name = document.getElementById('counsellorName').value.trim();
+    const username = document.getElementById('counsellorUsername').value.trim();
+    const password = document.getElementById('counsellorPassword').value.trim();
+    const confirmPassword = document.getElementById('counsellorConfirmPassword').value.trim();
+    const state = document.getElementById('counsellorState').value;
+    const district = document.getElementById('counsellorDistrict').value.trim();
+    const phone = document.getElementById('counsellorPhone').value.trim();
+    const email = document.getElementById('counsellorEmail').value.trim();
+    const qualification = document.getElementById('counsellorQualification').value.trim();
+    const specialization = document.getElementById('counsellorSpecialization').value.trim();
+    const experience = document.getElementById('counsellorExperience').value.trim();
+    const account_status = document.getElementById('counsellorStatus').value;
+
+    if (!name || !username || !password || !state || !district) {
+        errEl.textContent = 'Please fill all required fields (Name, Username, Password, State, District).';
+        errEl.classList.remove('hidden');
+        return;
+    }
+    if (password !== confirmPassword) {
+        errEl.textContent = 'Passwords do not match. Please re-enter.';
+        errEl.classList.remove('hidden');
+        return;
+    }
+    if (password.length < 6) {
+        errEl.textContent = 'Password must be at least 6 characters.';
+        errEl.classList.remove('hidden');
+        return;
+    }
+
+    const payload = { name, username, password, state, district, account_status };
+    if (phone) payload.phone = phone;
+    if (email) payload.email = email;
+    if (qualification) payload.qualification = qualification;
+    if (specialization) payload.specialization = specialization;
+    if (experience) payload.experience = experience;
+
+    const btn = document.getElementById('counsellorCreateSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Creating Counsellor...';
+
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/state_officer/create_counsellor`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok && data.status === 'success') {
+            successEl.innerHTML = `Counsellor <strong>${esc(data.name)}</strong> created successfully! Login ID: <strong>${esc(data.user_id)}</strong>. Password has been set.`;
+            successEl.classList.remove('hidden');
+            document.getElementById('counsellorCreateForm').reset();
+            document.getElementById('counsellorUsernameStatus').textContent = '';
+            loadCounsellorManagement();
+        } else {
+            errEl.textContent = data.error || 'Failed to create counsellor.';
+            errEl.classList.remove('hidden');
+        }
+    } catch (err) {
+        errEl.textContent = 'Network error. Please try again.';
+        errEl.classList.remove('hidden');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Create Counsellor Account';
+    }
+}
+
 function logout() {
     currentUser = { user_id: "", name: "", role: "", case_id: "", state: "", district: "", language: "en" };
     document.getElementById('authScreen').classList.remove('hidden');
@@ -1391,8 +1853,8 @@ function showTab(tabId) {
 
     if (tabId === 'my_case') loadMyCase();
     if (tabId === 'my_cases') loadMyCases();
-    if (tabId === 'behavioural_view') loadBehaviouralData();
-    if (tabId === 'longitudinal') loadLongitudinalCharts();
+    if (tabId === 'behavioural_view') { loadPatientOptions().then(() => loadBehaviouralData()); }
+    if (tabId === 'longitudinal') { loadPatientOptions().then(() => loadLongitudinalCharts()); }
     if (tabId === 'clinical_command') refreshCounsellorData();
     if (tabId === 'state_dashboard') refreshStateOfficerDashboard();
     if (tabId === 'victim_management') loadVictimManagement();
@@ -1691,7 +2153,7 @@ function toggleSpeechRecognition() {
 
     speechRecognizer.onresult = (event) => {
         let transcript = "";
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
+        for (let i = 0; i < event.results.length; ++i) {
             transcript += event.results[i][0].transcript;
         }
         textarea.value = transcript;
@@ -1704,6 +2166,16 @@ function toggleSpeechRecognition() {
         btn.classList.remove('recording-pulse');
         title.textContent = "Microphone Ready";
         desc.textContent = "Click to start recording voice";
+        const errorMessages = {
+            'not-allowed': "Microphone access denied. Please allow microphone access in your browser settings.",
+            'no-speech': "No speech detected. Please try again.",
+            'audio-capture': "No microphone found. Please connect a microphone.",
+            'network': "Network error during speech recognition. Please check your connection.",
+            'aborted': "Speech recognition was interrupted."
+        };
+        if (errorMessages[event.error]) {
+            showToast(errorMessages[event.error]);
+        }
     };
 
     speechRecognizer.onend = () => {
@@ -2229,24 +2701,42 @@ async function loadBehaviouralData() {
 
 // ================= LONGITUDINAL CHARTS TAB =================
 async function loadLongitudinalCharts() {
+    const tbody = document.getElementById('historyTbody');
     const uid = document.getElementById('chartPatientSelect').value || currentUser.user_id;
+
+    // Show loading state
+    tbody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-slate-400"><div class="loading-spinner mx-auto mb-2"></div>Loading longitudinal history...</td></tr>';
+
     try {
         const res = await fetch(`${BACKEND_URL}/get_user_analytics/${uid}`);
         const data = await res.json();
         const history = data.history || [];
 
+        if (data.error) {
+            tbody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-red-400">Unable to load longitudinal history. Please try again.</td></tr>';
+            if (longitudinalChart) { longitudinalChart.destroy(); longitudinalChart = null; }
+            if (emotionChart) { emotionChart.destroy(); emotionChart = null; }
+            return;
+        }
+
+        if (history.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-slate-400">No longitudinal records available for this beneficiary yet.</td></tr>';
+            if (longitudinalChart) { longitudinalChart.destroy(); longitudinalChart = null; }
+            if (emotionChart) { emotionChart.destroy(); emotionChart = null; }
+            return;
+        }
+
         // History Table
-        const tbody = document.getElementById('historyTbody');
         tbody.innerHTML = history.slice().reverse().map(h => `
             <tr>
-                <td class="py-2.5 pr-3 text-slate-500 whitespace-nowrap">${h.timestamp.split(' ')[0]}</td>
-                <td class="py-2.5 pr-3 font-extrabold text-primary">${h.distress_score}/100</td>
-                <td class="py-2.5 pr-3 font-bold ${h.risk_level === 'CRITICAL' || h.risk_level === 'HIGH' ? 'text-red-600' : 'text-slate-700'}">${h.risk_level}</td>
-                <td class="py-2.5 pr-3">${h.threat_level || '-'}</td>
-                <td class="py-2.5 pr-3">${h.court_stress || '-'}</td>
-                <td class="py-2.5 pr-3">${h.social_boycott || '-'}</td>
-                <td class="py-2.5 pr-3 font-semibold">${h.primary_emotion}</td>
-                <td class="py-2.5 max-w-xs truncate text-slate-600">${h.text || ''}</td>
+                <td class="py-2.5 pr-3 text-slate-500 whitespace-nowrap">${h.timestamp ? h.timestamp.split(' ')[0] : '-'}</td>
+                <td class="py-2.5 pr-3 font-extrabold text-primary">${h.distress_score != null ? h.distress_score + '/100' : '-'}</td>
+                <td class="py-2.5 pr-3 font-bold ${h.risk_level === 'CRITICAL' || h.risk_level === 'HIGH' ? 'text-red-600' : 'text-slate-700'}">${h.risk_level || '-'}</td>
+                <td class="py-2.5 pr-3">${h.threat_level != null ? h.threat_level : '-'}</td>
+                <td class="py-2.5 pr-3">${h.court_stress != null ? h.court_stress : '-'}</td>
+                <td class="py-2.5 pr-3">${h.social_boycott != null ? h.social_boycott : '-'}</td>
+                <td class="py-2.5 pr-3 font-semibold">${h.primary_emotion || 'Not recorded'}</td>
+                <td class="py-2.5 max-w-xs truncate text-slate-600">${h.text ? esc(h.text) : 'No journal entry'}</td>
             </tr>
         `).join('');
 
@@ -2256,7 +2746,7 @@ async function loadLongitudinalCharts() {
         longitudinalChart = new Chart(lineCtx, {
             type: 'line',
             data: {
-                labels: history.map(h => h.timestamp.split(' ')[0]),
+                labels: history.map(h => h.timestamp ? h.timestamp.split(' ')[0] : ''),
                 datasets: [{
                     label: 'Distress Score',
                     data: history.map(h => h.distress_score),
@@ -2276,22 +2766,29 @@ async function loadLongitudinalCharts() {
 
         // Emotion Doughnut Chart
         const counts = {};
-        history.forEach(h => { counts[h.primary_emotion] = (counts[h.primary_emotion] || 0) + 1; });
+        history.forEach(h => { if (h.primary_emotion) counts[h.primary_emotion] = (counts[h.primary_emotion] || 0) + 1; });
         const doughnutCtx = document.getElementById('emotionDoughnutChart').getContext('2d');
         if (emotionChart) emotionChart.destroy();
-        emotionChart = new Chart(doughnutCtx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(counts),
-                datasets: [{
-                    data: Object.values(counts),
-                    backgroundColor: ['#1d2b3e', '#dc2626', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6']
-                }]
-            },
-            options: { responsive: true }
-        });
+        if (Object.keys(counts).length > 0) {
+            emotionChart = new Chart(doughnutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{
+                        data: Object.values(counts),
+                        backgroundColor: ['#1d2b3e', '#dc2626', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6']
+                    }]
+                },
+                options: { responsive: true }
+            });
+        } else {
+            emotionChart = null;
+        }
     } catch (e) {
         console.error("Charts load error:", e);
+        tbody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-red-400">Unable to load longitudinal history. Please try again.</td></tr>';
+        if (longitudinalChart) { longitudinalChart.destroy(); longitudinalChart = null; }
+        if (emotionChart) { emotionChart.destroy(); emotionChart = null; }
     }
 }
 

@@ -13,7 +13,8 @@ from database import (
     register_nhaa_complaint, save_entry, get_user_history, save_contact,
     get_contact, get_all_alerts, get_all_users, get_district_dashboard_data,
     resolve_alert, get_all_assignments, assign_counsellor, get_unassigned_victims,
-    get_counsellor_workload, get_state_officer_dashboard
+    get_counsellor_workload, get_state_officer_dashboard,
+    create_victim_account, create_counsellor_account, check_username_available
 )
 import traceback
 
@@ -53,6 +54,30 @@ def login_route():
         return jsonify({"status": "error", "message": "Invalid credentials or unauthorized role access."}), 401
     except Exception as e:
         traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+# ================= VICTIM SIGNUP APIS =================
+@app.route("/api/signup/victim", methods=["POST"])
+def victim_signup_route():
+    try:
+        data = request.json or {}
+        result = create_victim_account(data)
+        if "error" in result:
+            return jsonify(result), 400
+        return jsonify(result)
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/check_username", methods=["GET"])
+def check_username_route():
+    try:
+        username = request.args.get("username", "").strip()
+        if not username:
+            return jsonify({"available": False})
+        result = check_username_available(username)
+        return jsonify(result)
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 # ================= STATES & NHAA COMPLAINTS APIS =================
@@ -325,6 +350,18 @@ def state_officer_assign():
             return jsonify(result), 400
         return jsonify(result)
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/state_officer/create_counsellor", methods=["POST"])
+def state_officer_create_counsellor():
+    try:
+        data = request.json or {}
+        result = create_counsellor_account(data)
+        if "error" in result:
+            return jsonify(result), 400
+        return jsonify(result)
+    except Exception as e:
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/state_officer/counsellors", methods=["GET"])

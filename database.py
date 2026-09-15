@@ -45,9 +45,32 @@ def init_db():
             state TEXT,
             district TEXT,
             phone TEXT,
-            language TEXT DEFAULT 'en'
+            language TEXT DEFAULT 'en',
+            email TEXT,
+            age INTEGER,
+            gender TEXT,
+            qualification TEXT,
+            specialization TEXT,
+            experience TEXT,
+            account_status TEXT DEFAULT 'active'
         )
     """)
+
+    # Add new columns if they don't exist (for existing databases)
+    cur.execute("PRAGMA table_info(users)")
+    existing_cols = [row[1] for row in cur.fetchall()]
+    new_cols = {
+        'email': 'TEXT',
+        'age': 'INTEGER',
+        'gender': 'TEXT',
+        'qualification': 'TEXT',
+        'specialization': 'TEXT',
+        'experience': 'TEXT',
+        'account_status': "TEXT DEFAULT 'active'"
+    }
+    for col_name, col_type in new_cols.items():
+        if col_name not in existing_cols:
+            cur.execute(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}")
 
     # 2. NHAA Complaints Table (National Helpline Against Atrocities 14566)
     cur.execute("""
@@ -326,6 +349,102 @@ def authenticate_user(username, password, role="victim"):
     if user:
         return dict(user)
     return None
+
+def create_victim_account(data):
+    """Create a new victim account via self-registration."""
+    conn = connect_db()
+    cur = conn.cursor()
+    username = data.get("username", "").strip()
+    password = data.get("password", "").strip()
+    name = data.get("name", "").strip()
+    state = data.get("state", "").strip()
+    district = data.get("district", "").strip()
+    phone = data.get("phone", "").strip()
+    language = data.get("language", "en")
+    email = data.get("email", "").strip()
+    age = data.get("age")
+    gender = data.get("gender", "").strip()
+
+    # Validate required fields
+    if not username or not password or not name or not state or not district:
+        conn.close()
+        return {"error": "Name, username, password, state, and district are required."}
+
+    # Check for duplicate username
+    cur.execute("SELECT user_id FROM users WHERE user_id = ?", (username,))
+    if cur.fetchone():
+        conn.close()
+        return {"error": "Username already exists. Please choose a different one."}
+
+    # Validate age if provided
+    if age:
+        try:
+            age = int(age)
+            if age < 1 or age > 120:
+                conn.close()
+                return {"error": "Please enter a valid age (1-120)."}
+        except (ValueError, TypeError):
+            conn.close()
+            return {"error": "Age must be a valid number."}
+
+    # Create user_id from username
+    user_id = username
+
+    cur.execute("""
+        INSERT INTO users (user_id, name, role, password, case_id, state, district, phone, language, email, age, gender, account_status)
+        VALUES (?, ?, 'victim', ?, '', ?, ?, ?, ?, ?, ?, ?, 'active')
+    """, (user_id, name, password, state, district, phone, language, email, age if age else None, gender))
+
+    conn.commit()
+    conn.close()
+    return {"status": "success", "user_id": user_id, "name": name}
+
+def create_counsellor_account(data):
+    """Create a new counsellor account by State Officer."""
+    conn = connect_db()
+    cur = conn.cursor()
+    username = data.get("username", "").strip()
+    password = data.get("password", "").strip()
+    name = data.get("name", "").strip()
+    state = data.get("state", "").strip()
+    district = data.get("district", "").strip()
+    phone = data.get("phone", "").strip()
+    email = data.get("email", "").strip()
+    qualification = data.get("qualification", "").strip()
+    specialization = data.get("specialization", "").strip()
+    experience = data.get("experience", "").strip()
+    account_status = data.get("account_status", "active")
+
+    # Validate required fields
+    if not username or not password or not name or not state or not district:
+        conn.close()
+        return {"error": "Name, username, password, state, and district are required."}
+
+    # Check for duplicate username
+    cur.execute("SELECT user_id FROM users WHERE user_id = ?", (username,))
+    if cur.fetchone():
+        conn.close()
+        return {"error": "Username already exists. Please choose a different one."}
+
+    user_id = username
+
+    cur.execute("""
+        INSERT INTO users (user_id, name, role, password, case_id, state, district, phone, language, email, qualification, specialization, experience, account_status)
+        VALUES (?, ?, 'counsellor', ?, '', ?, ?, ?, 'en', ?, ?, ?, ?, ?)
+    """, (user_id, name, password, state, district, phone, email, qualification, specialization, experience, account_status))
+
+    conn.commit()
+    conn.close()
+    return {"status": "success", "user_id": user_id, "name": name}
+
+def check_username_available(username):
+    """Check if a username is available."""
+    conn = connect_db()
+    cur = conn.cursor()
+    cur.execute("SELECT user_id FROM users WHERE user_id = ?", (username,))
+    exists = cur.fetchone() is not None
+    conn.close()
+    return {"available": not exists}
 
 def get_all_states():
     return INDIAN_STATES_AND_UTS
